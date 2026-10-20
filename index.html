@@ -644,16 +644,23 @@
 
         // ==================== BACKEND & STORAGE LOGIC ====================
         function initBackendClient() {
-            const url = localStorage.getItem('supabase_url');
-            const key = localStorage.getItem('supabase_key');
-            if (url && key && window.supabase) {
-                try {
-                    supabaseClient = window.supabase.createClient(url, key);
-                } catch(e) {
-                    console.error('Supabase initialization failed', e);
-                }
-            }
+    const SUPABASE_URL = 'https://hmfpnivlwwhsfgtsfkrf.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_kdaXtRp3A48hPTbKJv4_JQ_XDZVJDfP';
+
+    try {
+        if (window.supabase) {
+            supabaseClient = window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_KEY
+            );
+            console.log('Supabase connected');
+        } else {
+            console.error('Supabase library not loaded');
         }
+    } catch (e) {
+        console.error('Supabase initialization failed:', e);
+    }
+}
 
         async function saveRecordToDatabase(record) {
             // 1. Save to Local Memory & LocalStorage Backup
