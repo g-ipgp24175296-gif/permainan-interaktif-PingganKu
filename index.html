@@ -1005,14 +1005,24 @@ function initBackendClient() {
         }
 
         function downloadStudentPlatePNG(recordId) {
-        const student = allRecordsMemory.find(
-            r => String(r.id) === String(recordId)
+            const student = allRecordsMemory.find(
+                r => String(r.id) === String(recordId)
         );
 
         if (!student) {
-            alert('找不到这名學生的记录。');
+            alert('Rekod murid tidak dijumpai.');
             return;
         }
+
+        // Pastikan pilihan makanan tersedia
+        if (!student.selections) {
+            alert('Maklumat pilihan makanan murid tidak dijumpai.');
+            return;
+        }
+
+        // Gunakan reka bentuk PNG asal halaman keputusan
+        downloadPNG(student);
+}
 
         const canvas = document.createElement('canvas');
         canvas.width = 1200;
@@ -1186,7 +1196,7 @@ function initBackendClient() {
             }
         }
 
-        function downloadPNG() {
+        function downloadPNG(studentRecord = null) {
             const canvas = document.getElementById('export-canvas');
             const ctx = canvas.getContext('2d');
             const w = canvas.width;
@@ -1201,7 +1211,9 @@ function initBackendClient() {
             ctx.fillStyle = bgGrad;
             ctx.fillRect(0, 0, w, h);
 
-            const sel = gameState.selections;
+            const sel = studentRecord
+                ? studentRecord.selections
+                : gameState.selections;
             const selectedArray = [sel.protein, sel.karbohidrat, sel.sayur, sel.buah];
             const friedItems = selectedArray.filter(i => i && i.isFried);
             const isFriedHigh = friedItems.length >= 2;
@@ -1219,7 +1231,10 @@ function initBackendClient() {
 
             ctx.fillStyle = '#065f46';
             ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText(`Pinggan: ${gameState.playerName} (${gameState.meal})`, leftX + leftW / 2, headerPillY + 58);
+            const exportName = studentRecord ? studentRecord.playerName : gameState.playerName;
+            const exportMeal = studentRecord ? studentRecord.meal : gameState.meal;
+
+            ctx.fillText(`Pinggan: ${exportName} (${exportMeal})`, leftX + leftW / 2, headerPillY + 58);
 
             const cx = leftX + leftW / 2, cy = leftY + 475, radius = 210;
 
@@ -1367,7 +1382,7 @@ function initBackendClient() {
             }
 
             const link = document.createElement('a');
-            link.download = `pinggan-suku-suku-separuh-${gameState.playerName.toLowerCase().replace(/\s+/g, '-')}.png`;
+            link.download = `pinggan-suku-suku-separuh-${String(exportName || 'murid').toLowerCase().replace(/\s+/g, '-')}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         }
