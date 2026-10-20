@@ -1193,28 +1193,48 @@ function initBackendClient() {
             ctx.stroke();
             ctx.setLineDash([]);
 
-            function drawQuadrantItem(title, categoryKey, titleColor, qx, qy) {
-                const item = sel[categoryKey];
-                if (!item) return;
+            
+function drawQuadrantItem(title, categoryKey, titleColor, qx, qy) {
+        const item = sel && sel[categoryKey];
+        if (!item) return;
 
-                ctx.textAlign = 'center';
-                ctx.fillStyle = titleColor;
-                ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText(title, qx, qy - 42);
+        // 支援物件格式及文字格式的食物資料
+        const foodName = typeof item === 'string'
+            ? item
+            : (item.name || item.label || item.value || '未選擇');
 
-                ctx.font = '44px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
-                ctx.fillText(item.emoji, qx, qy + 12);
+        const foodEmoji = typeof item === 'object'
+            ? (item.emoji || '')
+            : '';
 
-                ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
-                const textWidth = ctx.measureText(item.name).width;
-                const pillW = textWidth + 28;
-                const pillH = 32;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = titleColor;
+        ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(title, qx, qy - 42);
 
-                drawRoundRect(ctx, qx - pillW / 2, qy + 30, pillW, pillH, 16, '#ffffff', '#cbd5e1', 1.5);
+        ctx.font = '44px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+        ctx.fillText(foodEmoji, qx, qy + 12);
 
-                ctx.fillStyle = '#1e293b';
-                ctx.fillText(item.name, qx, qy + 51);
-            }
+        ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
+        const textWidth = ctx.measureText(foodName).width;
+        const pillW = textWidth + 28;
+        const pillH = 32;
+
+        drawRoundRect(
+        ctx,
+        qx - pillW / 2,
+        qy + 30,
+        pillW,
+        pillH,
+        16,
+        '#ffffff',
+        '#cbd5e1',
+        1.5
+        );
+
+        ctx.fillStyle = '#1e293b';
+        ctx.fillText(foodName, qx, qy + 51);
+}
 
             const qOffset = radius * 0.45;
             drawQuadrantItem('PROTEIN', 'protein', '#78350f', cx - qOffset, cy - qOffset);
