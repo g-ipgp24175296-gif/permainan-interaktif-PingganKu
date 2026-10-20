@@ -1203,11 +1203,6 @@ function drawQuadrantItem(title, categoryKey, titleColor, qx, qy) {
             ? item
             : (item.name || item.label || item.value || '未選擇');
 
-        
-        const foodName = typeof item === 'string'
-            ? item
-            : (item.name || item.label || item.value || '未選擇');
-
         const foodEmoji = typeof item === 'object' && item.emoji
             ? item.emoji
             : ({
