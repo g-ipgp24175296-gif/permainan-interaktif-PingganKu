@@ -1203,9 +1203,32 @@ function drawQuadrantItem(title, categoryKey, titleColor, qx, qy) {
             ? item
             : (item.name || item.label || item.value || '未選擇');
 
-        const foodEmoji = typeof item === 'object'
-            ? (item.emoji || '')
-            : '';
+        
+        const foodName = typeof item === 'string'
+            ? item
+            : (item.name || item.label || item.value || '未選擇');
+
+        const foodEmoji = typeof item === 'object' && item.emoji
+            ? item.emoji
+            : ({
+                'Telur': '🥚',
+                'Ayam': '🍗',
+                'Ikan': '🐟',
+            'Daging': '🥩',
+            'Kubis': '🥬',
+            'Bayam': '🥬',
+            'Brokoli': '🥦',
+            'Lobak': '🥕',
+            'Roti': '🍞',
+            'Nasi': '🍚',
+            'Mi': '🍜',
+            'Kentang': '🥔',
+            'Pisang': '🍌',
+            'Epal': '🍎',
+            'Oren': '🍊',
+            'Tembikai': '🍉'
+         }[foodName] || '🍽️');
+
 
         ctx.textAlign = 'center';
         ctx.fillStyle = titleColor;
