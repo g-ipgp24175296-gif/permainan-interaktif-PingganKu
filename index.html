@@ -643,24 +643,33 @@
         });
 
         // ==================== BACKEND & STORAGE LOGIC ====================
-        function initBackendClient() {
+        
+function initBackendClient() {
     const SUPABASE_URL = 'https://hmfpnivlwwhsfgtsfkrf.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_kdaXtRp3A48hPTbKJv4_JQ_XDZVJDfP';
 
     try {
-        if (window.supabase) {
-            supabaseClient = window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_KEY
-            );
-            console.log('Supabase connected');
-        } else {
+        if (!window.supabase) {
             console.error('Supabase library not loaded');
+            return;
         }
-    } catch (e) {
-        console.error('Supabase initialization failed:', e);
+
+        // 自动保存默认设置，兼容旧代码
+        localStorage.setItem('supabase_url', SUPABASE_URL);
+        localStorage.setItem('supabase_key', SUPABASE_KEY);
+
+        // 自动建立 Supabase 连接
+        supabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+        console.log('Supabase client initialized');
+    } catch (error) {
+        console.error('Supabase initialization failed:', error);
     }
 }
+
 
         async function saveRecordToDatabase(record) {
             // 1. Save to Local Memory & LocalStorage Backup
