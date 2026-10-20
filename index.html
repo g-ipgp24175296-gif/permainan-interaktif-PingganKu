@@ -486,6 +486,7 @@
                             <th class="p-3">Waktu Makan</th>
                             <th class="p-3">Markah</th>
                             <th class="p-3">Pilihan Makanan</th>
+                            <th class="p-3 text-center">Pinggan PNG</th>
                             <th class="p-3 text-center">Tindakan</th>
                         </tr>
                     </thead>
@@ -961,7 +962,7 @@ function initBackendClient() {
             document.getElementById('db-stats-text').textContent = `Jumlah Rekod: ${filtered.length} daripada ${allRecordsMemory.length} murid`;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 font-bold">Tiada rekod murid dijumpai.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 font-bold">Tiada rekod murid dijumpai.</td></tr>`;
                 return;
             }
 
@@ -987,6 +988,13 @@ function initBackendClient() {
                         🍗 ${r.selections.protein} | 🍚 ${r.selections.karbohidrat} | 🥦 ${r.selections.sayur} | 🍎 ${r.selections.buah}
                     </td>
                     <td class="p-3 text-center">
+                        <button
+                            onclick="downloadStudentPlatePNG('${r.id}')"
+                            class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-[11px] px-3 py-2 rounded-lg whitespace-nowrap">
+                            📥 Muat Turun PNG
+                        </button>
+                    </td>
+                    <td class="p-3 text-center">
                         <button onclick="deleteRecord('${r.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[11px] underline">
                             Hapus
                         </button>
@@ -996,6 +1004,93 @@ function initBackendClient() {
             });
         }
 
+        function downloadStudentPlatePNG(recordId) {
+        const student = allRecordsMemory.find(
+            r => String(r.id) === String(recordId)
+        );
+
+        if (!student) {
+            alert('找不到这名學生的记录。');
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 1200;
+        canvas.height = 900;
+
+        const ctx = canvas.getContext('2d');
+
+        // 背景
+        ctx.fillStyle = '#f0fdf4';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 标题
+        ctx.fillStyle = '#166534';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 48px Arial';
+        ctx.fillText('PINGGAN SIHAT SAYA', 600, 90);
+
+        // 学生资料
+        ctx.fillStyle = '#1f2937';
+        ctx.font = 'bold 30px Arial';
+        ctx.fillText(`Nama: ${student.playerName || '-'}`, 600, 155);
+
+        ctx.font = '26px Arial';
+        ctx.fillText(`Waktu Makan: ${student.meal || '-'}`, 600, 200);
+        ctx.fillText(`Markah: ${student.score ?? '-'}%`, 600, 245);
+
+        // 画盘子
+        ctx.beginPath();
+        ctx.arc(600, 535, 235, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = 12;
+        ctx.strokeStyle = '#86efac';
+        ctx.stroke();
+
+        // 盘子里的四类食物资料
+        const selections = student.selections || {};
+        const foods = [
+            { label: 'Protein', value: selections.protein || '-', x: 475, y: 440 },
+            { label: 'Karbohidrat', value: selections.karbohidrat || '-', x: 725, y: 440 },
+            { label: 'Sayur', value: selections.sayur || '-', x: 475, y: 650 },
+            { label: 'Buah', value: selections.buah || '-', x: 725, y: 650 }
+        ];
+
+        foods.forEach(food => {
+            ctx.fillStyle = '#dcfce7';
+            ctx.beginPath();
+            ctx.arc(food.x, food.y - 20, 90, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#166534';
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText(food.label, food.x, food.y - 45);
+
+            ctx.fillStyle = '#1f2937';
+            ctx.font = '20px Arial';
+
+            const value = String(food.value);
+            const maxLength = 15;
+            const displayValue = value.length > maxLength
+                ? value.slice(0, maxLength - 3) + '...'
+                : value;
+
+            ctx.fillText(displayValue, food.x, food.y + 5);
+        });
+
+        // 下载 PNG
+        const link = document.createElement('a');
+        const safeName = String(student.playerName || 'Murid')
+            .replace(/[\\/:*?"<>|]/g, '_')
+            .replace(/\s+/g, '_');
+
+        link.download = `Pinggan_Sihat_${safeName}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        }
+        
         function deleteRecord(id) {
             if (!confirm('Adakah anda pasti untuk menghapuskan rekod murid ini?')) return;
             allRecordsMemory = allRecordsMemory.filter(r => r.id !== id);
