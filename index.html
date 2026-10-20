@@ -645,16 +645,26 @@
         // ==================== BACKEND & STORAGE LOGIC ====================
         
 
-function initBackendClient() {
-    const url = localStorage.getItem('supabase_url');
-    const key = localStorage.getItem('supabase_key');
+// ==================== SUPABASE CONFIGURATION ====================
+const SUPABASE_URL = 'https://hmfpnivlwwhsfgtsfkrf.supabase.co';
 
-    if (url && key && window.supabase) {
-        try {
-            supabaseClient = window.supabase.createClient(url, key);
-        } catch (e) {
-            console.error('Supabase initialization failed', e);
-        }
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_kdaXtRp3A48hPTbKJv4_JQ_XDZVJDfP';
+
+function initBackendClient() {
+    if (!window.supabase) {
+        console.error('Supabase library failed to load.');
+        return;
+    }
+
+    try {
+        supabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
+
+        console.log('Supabase initialized successfully.');
+    } catch (e) {
+        console.error('Supabase initialization failed:', e);
     }
 }
 
