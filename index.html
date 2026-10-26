@@ -37,6 +37,22 @@
             background: #94a3b8;
         }
     </style>
+
+<style id="pingganku-compact-results">
+/* Compact result view for children and students with special educational needs */
+#nutrition-comments { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px !important; }
+#nutrition-comments > div { padding: 8px 10px !important; margin: 0 !important; border-radius: 14px !important; }
+#nutrition-comments h4 { font-size: 10px !important; line-height: 1.2 !important; margin-bottom: 4px !important; }
+#nutrition-comments p { font-size: 11px !important; line-height: 1.35 !important; margin: 0 !important; }
+#nutrition-comments > div:last-child { grid-column: 1 / -1; }
+#nutrition-comments > div:last-child p { max-width: 100%; }
+
+@media (max-width: 620px) {
+  #nutrition-comments { grid-template-columns: 1fr; gap: 6px !important; }
+  #nutrition-comments > div { padding: 7px 9px !important; }
+}
+</style>
+
 </head>
 <body class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 h-screen w-screen overflow-hidden flex flex-col justify-between text-slate-800 antialiased">
 
@@ -368,51 +384,12 @@
                         </div>
                     </div>
 
-                    <!-- STRUCTURED COMMENTS CONTAINER -->
-                    <div class="space-y-2 my-1 text-xs">
-                        
-                        <!-- SAYUR DAN BUAH -->
-                        <div class="bg-emerald-50/90 p-2.5 rounded-2xl border border-emerald-200">
-                            <h4 class="font-black text-emerald-950 text-[11px] mb-1 flex items-center gap-1">
-                                🥦 SAYUR DAN BUAH:
-                            </h4>
-                            <ul class="list-disc list-inside space-y-0.5 text-emerald-900 font-bold text-[11px] pl-1">
-                                <li>Meningkatkan sistem ketahanan tubuh badan</li>
-                                <li>Melindungi tubuh badan daripada sakit</li>
-                            </ul>
+                    <!-- DYNAMIC, FOOD-SPECIFIC NUTRITION COMMENTS -->
+                    <div id="nutrition-comments" class="space-y-2 my-1 text-xs">
+                        <div class="bg-emerald-50/90 p-3 rounded-2xl border border-emerald-200">
+                            <h4 class="font-black text-emerald-950 text-[11px] mb-1">🥗 Ulasan Pinggan Anda</h4>
+                            <p class="text-emerald-900 font-bold text-[11px]">Ulasan pemakanan akan dipaparkan berdasarkan makanan yang dipilih.</p>
                         </div>
-
-                        <!-- KARBOHIDRAT -->
-                        <div class="bg-yellow-50/90 p-2.5 rounded-2xl border border-yellow-200">
-                            <h4 class="font-black text-yellow-950 text-[11px] mb-1 flex items-center gap-1">
-                                🍚 KARBOHIDRAT:
-                            </h4>
-                            <ul class="list-disc list-inside space-y-0.5 text-yellow-950 font-bold text-[11px] pl-1">
-                                <li>Memberikan tenaga yang cukup kepada tubuh badan</li>
-                                <li>Tidak mudah lapar</li>
-                            </ul>
-                        </div>
-
-                        <!-- PROTEIN -->
-                        <div class="bg-amber-50/90 p-2.5 rounded-2xl border border-amber-200">
-                            <h4 class="font-black text-amber-950 text-[11px] mb-1 flex items-center gap-1">
-                                🍗 PROTEIN:
-                            </h4>
-                            <ul class="list-disc list-inside space-y-0.5 text-amber-950 font-bold text-[11px] pl-1">
-                                <li>Membina atau membaiki tisu badan yang rosak</li>
-                                <li>Membantu perkembangan fizikal</li>
-                            </ul>
-                        </div>
-
-                        <!-- LEMAK / FRIED FOOD DYNAMIC COMMENT BOX -->
-                        <div id="fried-comment-box" class="p-2.5 rounded-2xl border transition-all">
-                            <h4 id="fried-comment-title" class="font-black text-[11px] mb-1 flex items-center gap-1">
-                                🍳 MAKANAN BERGORENG / LEMAK:
-                            </h4>
-                            <ul id="fried-comment-list" class="list-disc list-inside space-y-0.5 font-bold text-[11px] pl-1">
-                            </ul>
-                        </div>
-
                     </div>
 
                     <!-- ACTION BUTTONS -->
@@ -853,50 +830,120 @@ function initBackendClient() {
             });
 
             const selectedArray = [sel.protein, sel.karbohidrat, sel.sayur, sel.buah];
-            const friedItems = selectedArray.filter(i => i && i.isFried);
+            const friedItems = selectedArray.filter(item => item && item.isFried);
+            const commentsContainer = document.getElementById('nutrition-comments');
 
-            const friedBox = document.getElementById('fried-comment-box');
-            const friedTitle = document.getElementById('fried-comment-title');
-            const friedList = document.getElementById('fried-comment-list');
-            
-            const scorePercentEl = document.getElementById('res-score-percent');
-            const scoreLabelEl = document.getElementById('res-score-label');
-            const scoreBadgeContainer = document.getElementById('score-badge-container');
+            // Build specific feedback from the foods actually selected.
+            const foodAdvice = {
+                protein: {
+                    ayam: 'Ayam membantu badan membesar dan menjadi kuat.',
+                    ikan: 'Ikan membantu badan membesar dan kekal sihat.',
+                    daging: 'Daging membantu badan membesar. Pilih daging yang kurang berlemak.',
+                    telur: 'Telur membantu badan membesar dan menjadi kuat.',
+                    susu: 'Susu membantu menguatkan tulang dan gigi.',
+                    ayam_goreng: 'Ayam goreng membantu badan membesar. Ayam kukus atau panggang juga pilihan yang baik.'
+                },
+                karbohidrat: {
+                    nasi: 'Nasi memberi tenaga untuk belajar dan bermain.',
+                    mi: 'Mi memberi tenaga. Makan bersama sayur dan lauk.',
+                    roti: 'Roti memberi tenaga untuk aktiviti harian.',
+                    ubi_kentang: 'Kentang memberi tenaga. Kentang rebus atau bakar juga pilihan yang baik.',
+                    jagung: 'Jagung memberi tenaga dan membantu penghadaman.',
+                    nasi_goreng: 'Nasi goreng memberi tenaga. Cuba tambah sayur dan kurangkan minyak.',
+                    mi_goreng: 'Mi goreng memberi tenaga. Cuba tambah sayur dan pilih yang kurang berminyak.'
+                },
+                sayur: {
+                    lobak: 'Lobak membantu menjaga mata.',
+                    tomato: 'Tomato baik untuk kulit.',
+                    brokoli: 'Brokoli membantu badan kekal sihat.',
+                    kubis: 'Kubis baik untuk badan.',
+                    timun: 'Timun mengandungi banyak air. Cuba makan sayur yang pelbagai warna.',
+                    cendawan: 'Cendawan membantu melengkapkan hidangan yang sihat.'
+                },
+                buah: {
+                    oren: 'Oren baik untuk kulit.',
+                    pisang: 'Pisang memberi tenaga dan membuat kita ceria.',
+                    stroberi: 'Stroberi baik untuk kulit.',
+                    epal: 'Epal baik untuk kulit.',
+                    tembikai: 'Tembikai membantu badan kekal segar.',
+                    anggur: 'Anggur baik untuk kulit.',
+                    kiwi: 'Kiwi baik untuk kulit.'
+                }
+            };
 
-            friedList.innerHTML = '';
-            const baseItem = document.createElement('li');
-            baseItem.textContent = 'Kandungan lemak yang sesuai boleh bantu melindungi organ tubuh badan.';
+            const categoryInfo = [
+                { key: 'sayur', title: '🥦 SAYUR', color: 'emerald', ratio: 'Suku pinggan' },
+                { key: 'buah', title: '🍎 BUAH', color: 'rose', ratio: 'Suku pinggan' },
+                { key: 'karbohidrat', title: '🍚 KARBOHIDRAT', color: 'yellow', ratio: 'Suku pinggan' },
+                { key: 'protein', title: '🍗 PROTEIN', color: 'amber', ratio: 'Suku pinggan' }
+            ];
 
             let finalScore = 100;
             let finalScoreLabel = 'Seimbang';
 
             if (friedItems.length >= 2) {
                 finalScore = 80;
-                finalScoreLabel = 'Perlu Kurangkan Goreng';
-
-                scorePercentEl.textContent = '80%';
-                scoreLabelEl.textContent = 'Perlu Kurangkan Goreng';
-                scoreBadgeContainer.className = 'bg-amber-600 text-white font-black px-3 py-1 rounded-2xl text-center shadow-md';
-
-                friedBox.className = 'bg-amber-50/90 p-2.5 rounded-2xl border border-amber-300 text-amber-950';
-                friedTitle.className = 'font-black text-amber-950 text-[11px] mb-1 flex items-center gap-1';
-
-                const warningItem = document.createElement('li');
-                warningItem.className = 'text-rose-700 font-black mt-0.5';
-                warningItem.textContent = 'Kandungan lemak yang berlebihan akan mengakibatkan obesiti.';
-
-                friedList.appendChild(baseItem);
-                friedList.appendChild(warningItem);
-            } else {
-                scorePercentEl.textContent = '100%';
-                scoreLabelEl.textContent = 'Seimbang';
-                scoreBadgeContainer.className = 'bg-emerald-600 text-white font-black px-3 py-1 rounded-2xl text-center shadow-md';
-
-                friedBox.className = 'bg-blue-50/90 p-2.5 rounded-2xl border border-blue-200 text-blue-950';
-                friedTitle.className = 'font-black text-blue-950 text-[11px] mb-1 flex items-center gap-1';
-
-                friedList.appendChild(baseItem);
+                finalScoreLabel = 'Kurangkan Makanan Bergoreng';
             }
+
+            document.getElementById('res-score-percent').textContent = `${finalScore}%`;
+            document.getElementById('res-score-label').textContent = finalScoreLabel;
+            document.getElementById('score-badge-container').className = finalScore === 100
+                ? 'bg-emerald-600 text-white font-black px-3 py-1 rounded-2xl text-center shadow-md'
+                : 'bg-amber-600 text-white font-black px-3 py-1 rounded-2xl text-center shadow-md';
+
+            const cardClasses = {
+                emerald: 'bg-emerald-50/90 border-emerald-200 text-emerald-950',
+                rose: 'bg-rose-50/90 border-rose-200 text-rose-950',
+                yellow: 'bg-yellow-50/90 border-yellow-200 text-yellow-950',
+                amber: 'bg-amber-50/90 border-amber-200 text-amber-950',
+                blue: 'bg-blue-50/90 border-blue-200 text-blue-950'
+            };
+
+            let commentsHTML = '';
+            categoryInfo.forEach(info => {
+                const item = sel[info.key];
+                if (!item) return;
+                const advice = (foodAdvice[info.key] && foodAdvice[info.key][item.id])
+                    || `${item.name} ialah salah satu pilihan makanan. Jom makan pelbagai makanan!`;
+                commentsHTML += `
+                    <div class="${cardClasses[info.color]} p-2.5 rounded-2xl border">
+                        <h4 class="font-black text-[11px] mb-1">${info.title}: ${item.emoji} ${item.name}</h4>
+                        <p class="font-bold text-[11px] leading-relaxed">${advice}</p>
+                    </div>`;
+            });
+
+            if (friedItems.length > 0) {
+                const friedNames = friedItems.map(item => item.name).join(' dan ');
+                const friedAdvice = friedItems.length >= 2
+                    ? `Anda memilih ${friedNames}. Cuba pilih makanan yang kurang berminyak juga, seperti makanan rebus, kukus atau panggang.`
+                    : `Anda memilih ${friedNames}. Makanan ini boleh dimakan sekali-sekala. Cuba makanan yang kurang berminyak juga.`;
+                commentsHTML += `
+                    <div class="${friedItems.length >= 2 ? cardClasses.amber : cardClasses.blue} p-2.5 rounded-2xl border">
+                        <h4 class="font-black text-[11px] mb-1">🍳 PERHATIAN TENTANG KAEDAH MEMASAK</h4>
+                        <p class="font-bold text-[11px] leading-relaxed">${friedAdvice}</p>
+                    </div>`;
+            }
+
+            const selectedFoodNames = [
+                sel.karbohidrat, sel.protein, sel.sayur, sel.buah
+            ].filter(Boolean).map(item => item.name);
+            const selectedCategoryNames = [
+                sel.karbohidrat ? 'karbohidrat' : null,
+                sel.protein ? 'lauk' : null,
+                sel.sayur ? 'sayur' : null,
+                sel.buah ? 'buah' : null
+            ].filter(Boolean);
+            const summaryText = selectedFoodNames.length
+                ? `Bagus! Anda memilih ${selectedFoodNames.join(', ')}. Teruskan makan pelbagai makanan!`
+                : 'Pilih makanan untuk melihat rumusan pinggan anda.';
+
+            commentsHTML += `
+                <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 text-slate-800">
+                    <h4 class="font-black text-[11px] mb-1">🥗 RUMUSAN PINGGAN</h4>
+                    <p class="font-bold text-[11px] leading-relaxed">${summaryText}</p>
+                </div>`;
+            commentsContainer.innerHTML = commentsHTML;
 
             // ==================== AUTO SAVE RECORD TO BACKEND ====================
             const recordObj = {
@@ -1026,11 +1073,48 @@ function initBackendClient() {
         downloadPNG(student);
 }
 
-        function deleteRecord(id) {
+        async function deleteRecord(id) {
             if (!confirm('Adakah anda pasti untuk menghapuskan rekod murid ini?')) return;
-            allRecordsMemory = allRecordsMemory.filter(r => r.id !== id);
-            localStorage.setItem('student_records', JSON.stringify(allRecordsMemory));
-            renderDashboardTable();
+
+            const record = allRecordsMemory.find(r => String(r.id) === String(id));
+            if (!record) {
+                alert('Rekod tidak dijumpai. Sila muat semula Portal Guru dan cuba lagi.');
+                return;
+            }
+
+            // Padam rekod cloud dahulu supaya ia tidak muncul semula selepas loadRecords().
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('student_records')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) {
+                        console.error('Gagal memadam rekod daripada Supabase:', error);
+                        alert('Rekod tidak dapat dipadam daripada pangkalan data. Sila semak tetapan atau kebenaran database.');
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Ralat semasa memadam rekod:', err);
+                    alert('Rekod tidak dapat dipadam. Semak sambungan internet dan tetapan database.');
+                    return;
+                }
+            }
+
+            // Padam salinan setempat yang sepadan (id tempatan mungkin berbeza daripada ID cloud).
+            const localData = JSON.parse(localStorage.getItem('student_records') || '[]');
+            const remainingLocal = localData.filter(localRecord => {
+                if (String(localRecord.id) === String(id)) return false;
+                const sameRecord = record.playerName && localRecord.playerName === record.playerName &&
+                    record.timestamp && localRecord.timestamp === record.timestamp;
+                return !sameRecord;
+            });
+            localStorage.setItem('student_records', JSON.stringify(remainingLocal));
+
+            allRecordsMemory = allRecordsMemory.filter(r => String(r.id) !== String(id));
+            await renderDashboardTable();
+            alert('Rekod murid berjaya dipadam.');
         }
 
         function exportToCSV() {
@@ -1292,56 +1376,107 @@ function drawQuadrantItem(title, categoryKey, titleColor, qx, qy) {
             ctx.font = '800 10px "Plus Jakarta Sans", sans-serif';
             ctx.fillText(isFriedHigh ? 'PERLU KURANGKAN GORENG' : 'SEIMBANG', badgeX + badgeW / 2, badgeY + 48);
 
+
             const boxX = rightX + 30, boxW = rightW - 60;
-
-            const box1Y = rightY + 115, box1H = 140;
-            drawRoundRect(ctx, boxX, box1Y, boxW, box1H, 20, '#ecfdf5', '#a7f3d0', 1.5);
+            const adviceMap = {
+                protein: {
+                    Ayam: 'Ayam membantu badan membesar dan menjadi kuat.',
+                    Ikan: 'Ikan membantu badan membesar dan kekal sihat.',
+                    Daging: 'Daging membantu badan membesar.',
+                    Telur: 'Telur membantu badan membesar dan menjadi kuat.',
+                    Susu: 'Susu membantu menguatkan tulang dan gigi.',
+                    'Ayam Goreng': 'Ayam goreng membantu badan membesar. Ayam kukus atau panggang juga pilihan yang baik.'
+                },
+                karbohidrat: {
+                    Nasi: 'Nasi memberi tenaga untuk belajar dan bermain.',
+                    Mi: 'Mi memberi tenaga. Makan bersama sayur dan lauk.',
+                    Roti: 'Roti memberi tenaga untuk aktiviti harian.',
+                    Kentang: 'Kentang memberi tenaga.',
+                    Jagung: 'Jagung memberi tenaga.',
+                    'Nasi Goreng': 'Nasi goreng memberi tenaga. Cuba tambah sayur dan kurangkan minyak.',
+                    'Mi Goreng': 'Mi goreng memberi tenaga. Cuba tambah sayur.'
+                },
+                sayur: {
+                    Lobak: 'Lobak membantu menjaga mata.',
+                    Tomato: 'Tomato baik untuk kulit.',
+                    Brokoli: 'Brokoli membantu badan kekal sihat.',
+                    Kubis: 'Kubis baik untuk badan.',
+                    Timun: 'Timun mengandungi banyak air.',
+                    Cendawan: 'Cendawan membantu melengkapkan hidangan yang sihat.'
+                },
+                buah: {
+                    Epal: 'Epal baik untuk kulit.',
+                    Kiwi: 'Kiwi baik untuk kulit.',
+                    Oren: 'Oren baik untuk kulit.',
+                    Pisang: 'Pisang memberi tenaga dan membuat kita ceria.',
+                    Stroberi: 'Stroberi baik untuk kulit.',
+                    Tembikai: 'Tembikai membantu badan kekal segar.',
+                    Anggur: 'Anggur baik untuk kulit.'
+                }
+            };
+            const simpleAdvice = (key, item) => {
+                if (!item) return '';
+                const name = typeof item === 'string' ? item : (item.name || item.label || item.value || '');
+                return (adviceMap[key] && adviceMap[key][name]) || `${name} baik untuk badan.`;
+            };
+            const chosen = [
+                { key: 'sayur', title: '🥦 SAYUR', color: '#ecfdf5', border: '#a7f3d0', text: '#065f46' },
+                { key: 'buah', title: '🍎 BUAH', color: '#fff1f2', border: '#fecdd3', text: '#881337' },
+                { key: 'karbohidrat', title: '🍚 KARBOHIDRAT', color: '#fefce8', border: '#fde68a', text: '#713f12' },
+                { key: 'protein', title: '🍗 PROTEIN', color: '#fffbeb', border: '#fde68a', text: '#78350f' }
+            ];
+            const cardGap = 14, cardW = (boxW - cardGap) / 2, cardH = 102;
+            const cardsTop = rightY + 115;
             ctx.textAlign = 'left';
-            ctx.fillStyle = '#065f46';
-            ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('🥦 SAYUR DAN BUAH:', boxX + 20, box1Y + 34);
-            ctx.fillStyle = '#047857';
-            ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('•   Meningkatkan sistem ketahanan tubuh badan', boxX + 25, box1Y + 70);
-            ctx.fillText('•   Melindungi tubuh badan daripada sakit', boxX + 25, box1Y + 102);
-
-            const box2Y = box1Y + box1H + 20, box2H = 140;
-            drawRoundRect(ctx, boxX, box2Y, boxW, box2H, 20, '#fefce8', '#fef08a', 1.5);
-            ctx.fillStyle = '#713f12';
-            ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('🍚 KARBOHIDRAT:', boxX + 20, box2Y + 34);
-            ctx.fillStyle = '#854d0e';
-            ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('•   Memberikan tenaga yang cukup kepada tubuh badan', boxX + 25, box2Y + 70);
-            ctx.fillText('•   Tidak mudah lapar', boxX + 25, box2Y + 102);
-
-            const box3Y = box2Y + box2H + 20, box3H = 140;
-            drawRoundRect(ctx, boxX, box3Y, boxW, box3H, 20, '#fffbeb', '#fde68a', 1.5);
-            ctx.fillStyle = '#78350f';
-            ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('🍗 PROTEIN:', boxX + 20, box3Y + 34);
-            ctx.fillStyle = '#92400e';
-            ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('•   Membina atau membaiki tisu badan yang rosak', boxX + 25, box3Y + 70);
-            ctx.fillText('•   Membantu perkembangan fizikal', boxX + 25, box3Y + 102);
-
-            const box4Y = box3Y + box3H + 20, box4H = isFriedHigh ? 180 : 140;
-            const box4Bg = isFriedHigh ? '#fffbe1' : '#f0f9ff';
-            const box4Border = isFriedHigh ? '#fcd34d' : '#bae6fd';
-            drawRoundRect(ctx, boxX, box4Y, boxW, box4H, 20, box4Bg, box4Border, 1.5);
-
-            ctx.fillStyle = isFriedHigh ? '#78350f' : '#0c4a6e';
-            ctx.font = '800 16px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('🍳 MAKANAN BERGORENG / LEMAK:', boxX + 20, box4Y + 34);
-
-            ctx.fillStyle = isFriedHigh ? '#92400e' : '#0369a1';
-            ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('•   Kandungan lemak yang sesuai boleh bantu melindungi organ tubuh badan.', boxX + 25, box4Y + 70);
-
-            if (isFriedHigh) {
-                ctx.fillStyle = '#be123c';
+            chosen.forEach((info, index) => {
+                const item = sel && sel[info.key];
+                if (!item) return;
+                const x = boxX + (index % 2) * (cardW + cardGap);
+                const y = cardsTop + Math.floor(index / 2) * (cardH + 14);
+                drawRoundRect(ctx, x, y, cardW, cardH, 18, info.color, info.border, 1.5);
+                const name = typeof item === 'string' ? item : (item.name || item.label || item.value || '');
+                const emoji = typeof item === 'object' && item.emoji ? item.emoji : '🍽️';
+                ctx.fillStyle = info.text;
                 ctx.font = '800 15px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText('•   Kandungan lemak yang berlebihan akan mengakibatkan obesiti.', boxX + 25, box4Y + 106);
+                ctx.fillText(`${info.title}: ${emoji} ${name}`, x + 16, y + 30, cardW - 32);
+                ctx.font = '700 14px "Plus Jakarta Sans", sans-serif';
+                const advice = simpleAdvice(info.key, item);
+                const words = advice.split(' ');
+                let line = '', lineY = y + 57;
+                words.forEach(word => {
+                    const test = line ? `${line} ${word}` : word;
+                    if (ctx.measureText(test).width > cardW - 32 && line) {
+                        ctx.fillText(line, x + 16, lineY, cardW - 32);
+                        line = word; lineY += 20;
+                    } else line = test;
+                });
+                if (line && lineY < y + cardH - 8) ctx.fillText(line, x + 16, lineY, cardW - 32);
+            });
+
+            const summaryY = cardsTop + 2 * (cardH + 14);
+            drawRoundRect(ctx, boxX, summaryY, boxW, 82, 18, '#f8fafc', '#e2e8f0', 1.5);
+            ctx.fillStyle = '#334155';
+            ctx.font = '800 15px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('🥗 RUMUSAN PINGGAN', boxX + 16, summaryY + 27);
+            ctx.font = '700 14px "Plus Jakarta Sans", sans-serif';
+            const summaryFoodNames = [
+                sel && sel.karbohidrat, sel && sel.protein, sel && sel.sayur, sel && sel.buah
+            ].filter(Boolean).map(item => typeof item === 'string' ? item : (item.name || item.label || item.value || ''));
+            const summaryTextPNG = summaryFoodNames.length
+                ? `Bagus! Anda memilih ${summaryFoodNames.join(', ')}. Teruskan makan pelbagai makanan!`
+                : 'Pilih makanan untuk melihat rumusan pinggan anda.';
+            const summaryWords = summaryTextPNG.split(' ');
+            let summaryLine = '', summaryLineY = summaryY + 52;
+            summaryWords.forEach(word => {
+                const testLine = summaryLine ? `${summaryLine} ${word}` : word;
+                if (ctx.measureText(testLine).width > boxW - 32 && summaryLine) {
+                    ctx.fillText(summaryLine, boxX + 16, summaryLineY, boxW - 32);
+                    summaryLine = word;
+                    summaryLineY += 18;
+                } else summaryLine = testLine;
+            });
+            if (summaryLine && summaryLineY <= summaryY + 74) {
+                ctx.fillText(summaryLine, boxX + 16, summaryLineY, boxW - 32);
             }
 
             const link = document.createElement('a');
