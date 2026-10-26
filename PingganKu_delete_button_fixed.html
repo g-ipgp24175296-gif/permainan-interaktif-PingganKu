@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permainan Interaktif PingganKu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client for Cloud Backend -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        .plate-shadow {
+            box-shadow: 0 20px 35px -10px rgba(16, 185, 129, 0.25), 0 0 0 10px rgba(255, 255, 255, 0.95);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.8);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+
+<style id="pingganku-compact-results">
+/* Compact result view for children and students with special educational needs */
+#nutrition-comments { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px !important; }
+#nutrition-comments > div { padding: 8px 10px !important; margin: 0 !important; border-radius: 14px !important; }
+#nutrition-comments h4 { font-size: 10px !important; line-height: 1.2 !important; margin-bottom: 4px !important; }
+#nutrition-comments p { font-size: 11px !important; line-height: 1.35 !important; margin: 0 !important; }
+#nutrition-comments > div:last-child { grid-column: 1 / -1; }
+#nutrition-comments > div:last-child p { max-width: 100%; }
+
+@media (max-width: 620px) {
+  #nutrition-comments { grid-template-columns: 1fr; gap: 6px !important; }
+  #nutrition-comments > div { padding: 7px 9px !important; }
+}
+</style>
+
+</head>
+<body class="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 h-screen w-screen overflow-hidden flex flex-col justify-between text-slate-800 antialiased">
+
+    <!-- HEADER BAR -->
+    <header class="w-full max-w-6xl mx-auto px-4 py-2.5 flex justify-between items-center shrink-0 z-20">
+        <div class="flex items-center gap-2.5 cursor-pointer" onclick="goToScreen(1)">
+            <div class="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-emerald-200">
+                🥗
+            </div>
+            <div>
+                <h1 class="font-black text-base text-emerald-950 tracking-tight leading-none">PingganKu</h1>
+                <p class="text-[11px] text-emerald-600 font-bold mt-0.5">Permainan Interaktif: Suku-Suku Separuh</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Dynamic Page Indicator Badge -->
+            <div id="page-indicator" class="bg-white/90 backdrop-blur px-3 py-1 rounded-full border border-emerald-200 shadow-sm text-xs font-extrabold text-emerald-800 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="page-step-text">Halaman 1 / 5</span>
+            </div>
+
+            <!-- Teacher Portal Button -->
+            <button onclick="openTeacherPortal()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full border border-slate-700 shadow-sm text-xs font-black flex items-center gap-1.5 transition hover:scale-105">
+                <span>👨‍🏫</span>
+                <span class="hidden sm:inline">Portal Guru</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="w-full max-w-6xl mx-auto px-3 sm:px-4 flex-1 flex flex-col justify-center items-center overflow-hidden relative my-auto">
+
+        <!-- ==================== HALAMAN 1: PENGENALAN ==================== -->
+        <section id="screen-1" class="w-full max-w-xl glass-card rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-5 transform transition-all duration-300">
+            <div class="relative inline-flex items-center justify-center">
+                <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center text-4xl shadow-inner border-2 border-emerald-200">
+                    🍱
+                </div>
+                <span class="absolute -bottom-1 bg-amber-400 text-amber-950 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm tracking-wide uppercase border border-amber-300">SIHAT</span>
+            </div>
+
+            <div class="space-y-2">
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">Jom Rancang Hidangan!</h2>
+                <p class="text-slate-600 text-xs sm:text-sm font-medium leading-relaxed max-w-md mx-auto">
+                    Ketahui cara memilih hidangan seimbang, sihat dan berkhasiat mengikut waktu makan harian anda.
+                </p>
+            </div>
+
+            <!-- Features Highlights: Suku, Suku, Separuh -->
+            <div class="grid grid-cols-3 gap-2.5 pt-2 text-center">
+                <div class="bg-amber-50/90 p-3 rounded-2xl border border-amber-200 flex flex-col items-center justify-between shadow-sm">
+                    <span class="text-2xl mb-1">🍗</span>
+                    <div>
+                        <div class="font-black text-xs text-amber-900 leading-tight">PROTEIN</div>
+                        <div class="text-[10px] font-extrabold text-amber-700">Suku (1/4)</div>
+                        <div class="text-[10px] font-bold text-amber-800 mt-0.5">Bina Otot</div>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50/90 p-3 rounded-2xl border border-yellow-200 flex flex-col items-center justify-between shadow-sm">
+                    <span class="text-2xl mb-1">🍚</span>
+                    <div>
+                        <div class="font-black text-xs text-yellow-950 leading-tight">KARBOHIDRAT</div>
+                        <div class="text-[10px] font-extrabold text-yellow-800">Suku (1/4)</div>
+                        <div class="text-[10px] font-bold text-yellow-900 mt-0.5">Beri Tenaga</div>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50/90 p-3 rounded-2xl border border-emerald-200 flex flex-col items-center justify-between shadow-sm">
+                    <div class="flex gap-0.5 text-xl mb-1">
+                        <span>🥦</span><span>🍎</span>
+                    </div>
+                    <div>
+                        <div class="font-black text-xs text-emerald-950 leading-tight">SAYUR & BUAH</div>
+                        <div class="text-[10px] font-extrabold text-emerald-700">Separuh (1/2)</div>
+                        <div class="text-[10px] font-bold text-emerald-800 mt-0.5">Cegah Penyakit</div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="goToScreen(2)" class="w-full py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-2xl shadow-lg shadow-emerald-200 transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+                <span>🚀</span>
+                <span>Mula Permainan</span>
+            </button>
+        </section>
+
+        <!-- ==================== HALAMAN 2: PILIHAN WAKTU MAKAN ==================== -->
+        <section id="screen-2" class="hidden w-full max-w-xl glass-card rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6">
+            <div class="space-y-1">
+                <span class="text-xs font-black text-emerald-600 uppercase tracking-widest">Langkah 1 daripada 3</span>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-800">Pilih Waktu Makan</h2>
+                <p class="text-slate-600 text-xs sm:text-sm font-medium">Apakah waktu makan yang ingin anda rancang hari ini?</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button onclick="selectMeal('Sarapan')" class="meal-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/60 transition-all text-center flex flex-col items-center gap-2 shadow-sm group">
+                    <span class="text-4xl group-hover:scale-110 transition-transform">🌅</span>
+                    <span class="font-extrabold text-sm text-slate-800 group-hover:text-emerald-800">Sarapan</span>
+                </button>
+                <button onclick="selectMeal('Makan Tengah Hari')" class="meal-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/60 transition-all text-center flex flex-col items-center gap-2 shadow-sm group">
+                    <span class="text-4xl group-hover:scale-110 transition-transform">☀️</span>
+                    <span class="font-extrabold text-sm text-slate-800 group-hover:text-emerald-800">Tengah Hari</span>
+                </button>
+                <button onclick="selectMeal('Makan Malam')" class="meal-btn p-4 rounded-2xl border-2 border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/60 transition-all text-center flex flex-col items-center gap-2 shadow-sm group">
+                    <span class="text-4xl group-hover:scale-110 transition-transform">🌙</span>
+                    <span class="font-extrabold text-sm text-slate-800 group-hover:text-emerald-800">Makan Malam</span>
+                </button>
+            </div>
+
+            <button onclick="goToScreen(1)" class="text-xs font-bold text-slate-500 hover:text-slate-800 transition">
+                ← Kembali ke Pengenalan
+            </button>
+        </section>
+
+        <!-- ==================== HALAMAN 3: ISI NAMA ==================== -->
+        <section id="screen-3" class="hidden w-full max-w-md glass-card rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-5">
+            <div class="w-14 h-14 bg-emerald-100 rounded-2xl text-3xl flex items-center justify-center mx-auto text-emerald-700 font-bold">
+                ✏️
+            </div>
+            <div class="space-y-1">
+                <span class="text-xs font-black text-emerald-600 uppercase tracking-widest">Langkah 2 daripada 3</span>
+                <h2 class="text-2xl font-black text-slate-800">Masukkan Nama Anda</h2>
+                <p class="text-slate-500 text-xs">Nama anda akan dipaparkan pada kad hasil rancangan pinggan sihat.</p>
+            </div>
+
+            <form onsubmit="submitName(event)" class="space-y-4">
+                <div class="text-left">
+                    <label for="player-name-input" class="block text-xs font-extrabold text-slate-700 mb-1.5 ml-1">Nama Pemain:</label>
+                    <input type="text" id="player-name-input" required placeholder="Contoh: Ahmad / Siti" maxlength="25" class="w-full px-4 py-3 rounded-2xl border-2 border-slate-200 focus:border-emerald-500 focus:outline-none font-bold text-sm bg-white/90 transition shadow-sm">
+                </div>
+
+                <div class="flex gap-2">
+                    <button type="button" onclick="goToScreen(2)" class="w-1/3 py-3 rounded-2xl border border-slate-300 font-bold text-slate-600 text-xs hover:bg-slate-100 transition">
+                        Kembali
+                    </button>
+                    <button type="submit" class="w-2/3 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-2xl shadow-md transition">
+                        Teruskan ke Permainan ➔
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ==================== HALAMAN 4: PERMAINAN ==================== -->
+        <section id="screen-4" class="hidden w-full h-full max-h-[85vh] flex flex-col justify-between">
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center h-full overflow-hidden">
+                
+                <!-- LEFT COLUMN: CATEGORY FOOD SELECTOR GRID (7 cols) -->
+                <div class="md:col-span-7 glass-card rounded-3xl p-3 sm:p-4 shadow-xl flex flex-col justify-between h-full max-h-[460px] overflow-hidden">
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                        <div>
+                            <span class="text-[10px] font-black text-emerald-600 uppercase tracking-wider block">Pilih Hidangan Pemakanan</span>
+                            <h3 class="text-base sm:text-lg font-black text-slate-800">Bina Pinggan Suku Suku Separuh</h3>
+                        </div>
+                        <span id="game-user-meal-tag" class="bg-emerald-100 text-emerald-800 text-xs font-black px-3 py-1 rounded-full border border-emerald-200">
+                            Ahmad • Sarapan
+                        </span>
+                    </div>
+
+                    <!-- 4 CATEGORY SELECTION CARDS GRID -->
+                    <div class="grid grid-cols-2 gap-2 my-2 overflow-y-auto max-h-[350px] pr-1">
+                        
+                        <!-- 1. PROTEIN BOX -->
+                        <div class="bg-amber-50/70 p-2 rounded-2xl border border-amber-200">
+                            <h4 class="text-xs font-extrabold text-amber-900 mb-1.5 flex items-center gap-1">
+                                🍗 Protein <span class="text-[9px] font-bold text-amber-700">(Suku 1/4)</span>
+                            </h4>
+                            <div class="grid grid-cols-2 gap-1" id="grid-protein"></div>
+                        </div>
+
+                        <!-- 2. SAYUR BOX -->
+                        <div class="bg-emerald-50/70 p-2 rounded-2xl border border-emerald-200">
+                            <h4 class="text-xs font-extrabold text-emerald-900 mb-1.5 flex items-center gap-1">
+                                🥦 Sayur <span class="text-[9px] font-bold text-emerald-700">(Suku 1/4)</span>
+                            </h4>
+                            <div class="grid grid-cols-2 gap-1" id="grid-sayur"></div>
+                        </div>
+
+                        <!-- 3. KARBOHIDRAT BOX -->
+                        <div class="bg-yellow-50/70 p-2 rounded-2xl border border-yellow-200">
+                            <h4 class="text-xs font-extrabold text-yellow-950 mb-1.5 flex items-center gap-1">
+                                🍚 Karbohidrat <span class="text-[9px] font-bold text-yellow-800">(Suku 1/4)</span>
+                            </h4>
+                            <div class="grid grid-cols-2 gap-1" id="grid-karbohidrat"></div>
+                        </div>
+
+                        <!-- 4. BUAH BOX -->
+                        <div class="bg-rose-50/70 p-2 rounded-2xl border border-rose-200">
+                            <h4 class="text-xs font-extrabold text-rose-900 mb-1.5 flex items-center gap-1">
+                                🍎 Buah <span class="text-[9px] font-bold text-rose-700">(Suku 1/4)</span>
+                            </h4>
+                            <div class="grid grid-cols-2 gap-1" id="grid-buah"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom Status Bar -->
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-200 text-xs">
+                        <span id="selection-status-text" class="text-slate-500 font-bold">Pilih 1 item daripada setiap kategori!</span>
+                        <button onclick="resetSelections()" class="text-slate-400 hover:text-rose-600 font-extrabold text-[11px] underline transition">
+                            Reset Pilihan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: LIVE INTERACTIVE PLATE DISPLAY (5 cols) -->
+                <div class="md:col-span-5 glass-card rounded-3xl p-4 shadow-xl flex flex-col items-center justify-between h-full max-h-[460px] relative">
+                    
+                    <div class="text-center">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Pratonton</span>
+                        <h3 class="text-base font-black text-slate-800">Paparan Pinggan</h3>
+                    </div>
+
+                    <!-- CIRCULAR PLATE -->
+                    <div class="relative w-[250px] h-[250px] sm:w-[280px] sm:h-[280px] rounded-full bg-white border-[8px] border-slate-800 plate-shadow my-auto flex items-center justify-center overflow-hidden shrink-0">
+                        
+                        <div class="absolute inset-0 pointer-events-none">
+                            <div class="absolute top-0 bottom-0 left-1/2 w-1 bg-slate-800 -translate-x-1/2"></div>
+                            <div class="absolute top-1/2 left-0 w-1/2 h-1 bg-slate-800 -translate-y-1/2"></div>
+                            <div class="absolute top-1/2 right-0 w-1/2 h-0.5 border-b-2 border-dashed border-emerald-500 -translate-y-1/2"></div>
+                        </div>
+
+                        <!-- PROTEIN -->
+                        <div class="absolute top-[30%] left-[30%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center w-[40%] z-10 pointer-events-none">
+                            <span class="text-[10px] sm:text-[11px] font-extrabold text-amber-900 tracking-wider leading-none">PROTEIN</span>
+                            <span id="live-protein-emoji" class="text-2xl sm:text-3xl my-0.5 drop-shadow">❓</span>
+                            <span id="live-protein-name" class="bg-white/90 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold text-slate-700 border border-slate-200 max-w-full truncate">Pilih Protein</span>
+                        </div>
+
+                        <!-- KARBOHIDRAT -->
+                        <div class="absolute top-[70%] left-[30%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center w-[40%] z-10 pointer-events-none">
+                            <span class="text-[10px] sm:text-[11px] font-extrabold text-yellow-950 tracking-wider leading-none">KARBOHIDRAT</span>
+                            <span id="live-karbohidrat-emoji" class="text-2xl sm:text-3xl my-0.5 drop-shadow">❓</span>
+                            <span id="live-karbohidrat-name" class="bg-white/90 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold text-slate-700 border border-slate-200 max-w-full truncate">Pilih Karbo</span>
+                        </div>
+
+                        <!-- SAYUR -->
+                        <div class="absolute top-[30%] left-[70%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center w-[40%] z-10 pointer-events-none">
+                            <span class="text-[10px] sm:text-[11px] font-extrabold text-emerald-900 tracking-wider leading-none">SAYUR</span>
+                            <span id="live-sayur-emoji" class="text-2xl sm:text-3xl my-0.5 drop-shadow">❓</span>
+                            <span id="live-sayur-name" class="bg-white/90 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold text-slate-700 border border-slate-200 max-w-full truncate">Pilih Sayur</span>
+                        </div>
+
+                        <!-- BUAH -->
+                        <div class="absolute top-[70%] left-[70%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center w-[40%] z-10 pointer-events-none">
+                            <span class="text-[10px] sm:text-[11px] font-extrabold text-rose-900 tracking-wider leading-none">BUAH</span>
+                            <span id="live-buah-emoji" class="text-2xl sm:text-3xl my-0.5 drop-shadow">❓</span>
+                            <span id="live-buah-name" class="bg-white/90 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold text-slate-700 border border-slate-200 max-w-full truncate">Pilih Buah</span>
+                        </div>
+                    </div>
+
+                    <!-- ACTION BUTTON: EVALUATE MEAL -->
+                    <button id="btn-evaluate" disabled onclick="evaluateMeal()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm rounded-2xl shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <span>🔍</span>
+                        <span>Nilai & Simpan Keputusan</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== HALAMAN 5: ENDING / KEPUTUSAN ==================== -->
+        <section id="screen-5" class="hidden w-full h-full max-h-[85vh] flex flex-col justify-between">
+            
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center h-full overflow-hidden">
+                
+                <!-- LEFT COLUMN: RESULT PLATE PREVIEW (5 cols) -->
+                <div class="md:col-span-5 glass-card rounded-3xl p-4 shadow-xl flex flex-col items-center justify-between h-full max-h-[460px] relative">
+                    
+                    <div class="w-full text-center bg-emerald-100/90 border border-emerald-300 rounded-2xl py-1.5 px-3">
+                        <span class="text-[10px] font-black text-emerald-800 uppercase tracking-widest block">Hasil Hidangan</span>
+                        <h4 id="res-user-header" class="text-xs sm:text-sm font-extrabold text-emerald-950 truncate">Pinggan: Ahmad (Sarapan)</h4>
+                    </div>
+
+                    <!-- FINAL PLATE -->
+                    <div class="relative w-[230px] h-[230px] sm:w-[260px] sm:h-[260px] rounded-full bg-white border-[8px] border-slate-800 plate-shadow my-auto flex items-center justify-center overflow-hidden shrink-0">
+                        
+                        <div class="absolute inset-0 pointer-events-none">
+                            <div class="absolute top-0 bottom-0 left-1/2 w-1 bg-slate-800 -translate-x-1/2"></div>
+                            <div class="absolute top-1/2 left-0 w-1/2 h-1 bg-slate-800 -translate-y-1/2"></div>
+                            <div class="absolute top-1/2 right-0 w-1/2 h-0.5 border-b-2 border-dashed border-emerald-500 -translate-y-1/2"></div>
+                        </div>
+
+                        <!-- PROTEIN -->
+                        <div class="absolute top-[30%] left-[30%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center w-[40%] z-10 pointer-events-none">
+                            <span class="text-[10px] font-extrabold text-amber-900 tracking-wider leading-none">PROTEIN</span>
+                            <span id="final-protein-emoji" class="text-2xl sm:text-3xl my-0.5 drop-shadow">🍗</span>
+                            <span id="final-protein-name" class="bg-white/95 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] font-extrabold text-slate-800 border border-amber-200 max-w-full truncate">Ayam</span>
+                        </div>
+
+                        <!-- KARBOHIDRAT -->
+                        <div class="absolute top-[70%] left-[30%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center w-[40%] z-10 pointer-events-none">
+                            <span class="text-[10px] font-extrabold text-yellow-950 tracking-wider leading-none">KARBOHIDRAT</span>
+                            <span id="final-karbohidrat-emoji" class="text-2xl sm:text-3xl my-0.5 drop-shadow">🍚</span>
+                            <span id="final-karbohidrat-name" class="bg-white/95 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] font-extrabold text-slate-800 border border-yellow-200 max-w-full truncate">Nasi</span>
+                        </div>
+
+                        <!-- SAYUR -->
+                        <div class="absolute top-[30%] left-[70%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center w-[40%] z-10 pointer-events-none">
+                            <span class="text-[10px] font-extrabold text-emerald-900 tracking-wider leading-none">SAYUR</span>
+                            <span id="final-sayur-emoji" class="text-2xl sm:text-3xl my-0.5 drop-shadow">🥦</span>
+                            <span id="final-sayur-name" class="bg-white/95 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] font-extrabold text-slate-800 border border-emerald-200 max-w-full truncate">Brokoli</span>
+                        </div>
+
+                        <!-- BUAH -->
+                        <div class="absolute top-[70%] left-[70%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center text-center w-[40%] z-10 pointer-events-none">
+                            <span class="text-[10px] font-extrabold text-rose-900 tracking-wider leading-none">BUAH</span>
+                            <span id="final-buah-emoji" class="text-2xl sm:text-3xl my-0.5 drop-shadow">🍎</span>
+                            <span id="final-buah-name" class="bg-white/95 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] font-extrabold text-slate-800 border border-rose-200 max-w-full truncate">Epal</span>
+                        </div>
+                    </div>
+
+                    <div class="w-full text-center flex items-center justify-center gap-1.5 text-xs text-emerald-700 font-bold">
+                        <span>✅ Keputusan Disimpan ke Pengkalan Data</span>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: SCORE & STRUCTURED EVALUATION COMMENTS (7 cols) -->
+                <div class="md:col-span-7 glass-card rounded-3xl p-3 sm:p-4 shadow-xl flex flex-col justify-between h-full max-h-[460px] overflow-y-auto">
+                    
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <div>
+                            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Penilaian Nutrisi</span>
+                            <h3 class="text-base sm:text-lg font-black text-slate-800">Cadangan & Ulasan Pemakanan</h3>
+                        </div>
+                        <div id="score-badge-container" class="bg-emerald-600 text-white font-black px-3 py-1 rounded-2xl text-center shadow-md">
+                            <span id="res-score-percent" class="text-base sm:text-lg block leading-none">100%</span>
+                            <span id="res-score-label" class="text-[8px] uppercase tracking-wider block">Sempurna</span>
+                        </div>
+                    </div>
+
+                    <!-- DYNAMIC, FOOD-SPECIFIC NUTRITION COMMENTS -->
+                    <div id="nutrition-comments" class="space-y-2 my-1 text-xs">
+                        <div class="bg-emerald-50/90 p-3 rounded-2xl border border-emerald-200">
+                            <h4 class="font-black text-emerald-950 text-[11px] mb-1">🥗 Ulasan Pinggan Anda</h4>
+                            <p class="text-emerald-900 font-bold text-[11px]">Ulasan pemakanan akan dipaparkan berdasarkan makanan yang dipilih.</p>
+                        </div>
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+                        <button onclick="downloadPNG()" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5">
+                            <span>📸</span>
+                            <span>Muat Turun PNG</span>
+                        </button>
+                        <button onclick="restartGame()" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl border border-slate-300 transition flex items-center justify-center gap-1.5">
+                            <span>🔄</span>
+                            <span>Ulang Lagi</span>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== HALAMAN 6: PORTAL GURU / BACKEND DASHBOARD ==================== -->
+        <section id="screen-6" class="hidden w-full h-full max-h-[85vh] glass-card rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col justify-between overflow-hidden">
+            
+            <!-- Dashboard Header -->
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">📊</span>
+                        <h2 class="text-lg sm:text-xl font-black text-slate-800">Portal Guru - Rekod Keputusan Murid</h2>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-500 mt-0.5">Semua keputusan rekod disimpan sepanjang hayat mengikut tarikh, nama & markah.</p>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="openSupabaseConfigModal()" class="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-extrabold text-xs px-3 py-2 rounded-xl transition flex items-center gap-1">
+                        <span>⚙️</span>
+                        <span>Tetapan Database</span>
+                    </button>
+                    <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-3 py-2 rounded-xl shadow transition flex items-center gap-1">
+                        <span>📥</span>
+                        <span>Eksport Excel/CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search & Filters -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 my-3">
+                <input type="text" id="db-search-input" oninput="renderDashboardTable()" placeholder="🔍 Cari nama murid..." class="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:border-emerald-500 bg-white">
+                
+                <select id="db-filter-meal" onchange="renderDashboardTable()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:border-emerald-500 bg-white">
+                    <option value="ALL">Semua Waktu Makan</option>
+                    <option value="Sarapan">Sarapan</option>
+                    <option value="Makan Tengah Hari">Makan Tengah Hari</option>
+                    <option value="Makan Malam">Makan Malam</option>
+                </select>
+
+                <select id="db-filter-score" onchange="renderDashboardTable()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:border-emerald-500 bg-white">
+                    <option value="ALL">Semua Markah</option>
+                    <option value="100">100% (Seimbang)</option>
+                    <option value="80">80% (Perlu Kurangkan Goreng)</option>
+                </select>
+            </div>
+
+            <!-- Records Data Table -->
+            <div class="flex-1 overflow-x-auto overflow-y-auto border border-slate-200 rounded-2xl bg-white shadow-inner my-1">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-100 sticky top-0 border-b border-slate-200 font-extrabold text-slate-700 z-10">
+                        <tr>
+                            <th class="p-3">#</th>
+                            <th class="p-3">Tarikh & Masa</th>
+                            <th class="p-3">Nama Murid</th>
+                            <th class="p-3">Waktu Makan</th>
+                            <th class="p-3">Markah</th>
+                            <th class="p-3">Pilihan Makanan</th>
+                            <th class="p-3 text-center">Pinggan PNG</th>
+                            <th class="p-3 text-center">Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="db-records-tbody" class="divide-y divide-slate-100 font-medium text-slate-700">
+                        <!-- Dynamic Records -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Dashboard Footer -->
+            <div class="pt-3 border-t border-slate-200 flex justify-between items-center text-xs">
+                <span id="db-stats-text" class="font-extrabold text-slate-500">Jumlah Rekod: 0 murid</span>
+                <button onclick="goToScreen(1)" class="bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 px-4 py-2 rounded-xl transition">
+                    ← Kembali ke Permainan
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="w-full max-w-6xl mx-auto px-4 py-1.5 text-center text-[11px] text-slate-400 font-semibold shrink-0">
+        Permainan Edukasi Pemakanan Sihat Suku Suku Separuh • Sistem Backend & Pengkalan Data Murid
+    </footer>
+
+    <!-- MODAL: PIN AUTHENTICATION FOR TEACHER PORTAL -->
+    <div id="pin-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4">
+            <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl mx-auto">
+                🔒
+            </div>
+            <div>
+                <h3 class="text-lg font-black text-slate-800">Akses Portal Guru</h3>
+                <p class="text-xs text-slate-500 font-medium mt-1">Masukkan PIN Laluan Guru untuk melihat rekod murid.</p>
+            </div>
+            <input type="password" id="teacher-pin-input" placeholder="PIN Laluan (Default: 1234)" maxlength="8" class="w-full text-center tracking-widest text-lg font-black py-2.5 rounded-xl border-2 border-slate-200 focus:border-slate-800 focus:outline-none">
+            
+            <div class="flex gap-2">
+                <button onclick="closePinModal()" class="w-1/2 py-2.5 border border-slate-300 text-xs font-bold rounded-xl hover:bg-slate-100">Batal</button>
+                <button onclick="verifyTeacherPin()" class="w-1/2 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-black rounded-xl shadow">Masuk ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: VIEW STUDENT PLATE DETAILS -->
+    <div id="detail-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-center space-y-4">
+            <h3 id="modal-student-title" class="text-base font-black text-slate-800">Butiran Pinggan Murid</h3>
+            
+            <div id="modal-plate-container" class="py-2 flex justify-center">
+                <!-- Dynamic Mini Plate Rendering -->
+            </div>
+
+            <button onclick="closeDetailModal()" class="w-full py-2.5 bg-slate-800 text-white font-black text-xs rounded-xl hover:bg-slate-900">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: SUPABASE DATABASE CONFIGURATION -->
+    <div id="supabase-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-left space-y-4">
+            <div class="flex items-center gap-2 border-b pb-2">
+                <span class="text-xl">⚙️</span>
+                <h3 class="text-base font-black text-slate-800">Sambungan Pengkalan Data Supabase</h3>
+            </div>
+            
+            <p class="text-xs text-slate-600 font-medium">
+                Masukkan URL & Anon Key daripada akaun percuma <strong>Supabase.com</strong> anda untuk simpanan kekal sepanjang hayat di cloud.
+            </p>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-black text-slate-700 mb-1">Supabase Project URL:</label>
+                    <input type="text" id="cfg-supa-url" placeholder="https://xyz.supabase.co" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-black text-slate-700 mb-1">Supabase Anon Key:</label>
+                    <input type="text" id="cfg-supa-key" placeholder="eyJhbGciOiJIUzI1Ni..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-200 text-[11px] text-amber-900 font-semibold">
+                💡 Sekiranya belum disetkan, sistem akan simpan rekod dalam simpanan browser peranti ini (LocalStorage).
+            </div>
+
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeSupabaseModal()" class="w-1/2 py-2.5 border border-slate-300 text-xs font-bold rounded-xl hover:bg-slate-100">Batal</button>
+                <button onclick="saveSupabaseConfig()" class="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl shadow">Simpan Tetapan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HIDDEN CANVAS FOR EXPORTING PNG IMAGE -->
+    <canvas id="export-canvas" width="1600" height="900" class="hidden"></canvas>
+
+    <script>
+        // DATABASE FOOD CATALOG
+        const FOOD_DATABASE = {
+            protein: [
+                { id: 'ayam', name: 'Ayam', emoji: '🍗', isFried: false },
+                { id: 'ikan', name: 'Ikan', emoji: '🐟', isFried: false },
+                { id: 'daging', name: 'Daging', emoji: '🥩', isFried: false },
+                { id: 'telur', name: 'Telur', emoji: '🥚', isFried: false },
+                { id: 'susu', name: 'Susu', emoji: '🥛', isFried: false },
+                { id: 'ayam_goreng', name: 'Ayam Goreng', emoji: '🍗', isFried: true }
+            ],
+            karbohidrat: [
+                { id: 'nasi', name: 'Nasi', emoji: '🍚', isFried: false },
+                { id: 'mi', name: 'Mi', emoji: '🍜', isFried: false },
+                { id: 'roti', name: 'Roti', emoji: '🍞', isFried: false },
+                { id: 'ubi_kentang', name: 'Ubi Kentang', emoji: '🥔', isFried: false },
+                { id: 'jagung', name: 'Jagung', emoji: '🌽', isFried: false },
+                { id: 'nasi_goreng', name: 'Nasi Goreng', emoji: '🍳', isFried: true },
+                { id: 'mi_goreng', name: 'Mi Goreng', emoji: '🍝', isFried: true }
+            ],
+            sayur: [
+                { id: 'lobak', name: 'Lobak', emoji: '🥕', isFried: false },
+                { id: 'tomato', name: 'Tomato', emoji: '🍅', isFried: false },
+                { id: 'brokoli', name: 'Brokoli', emoji: '🥦', isFried: false },
+                { id: 'kubis', name: 'Kubis', emoji: '🥬', isFried: false },
+                { id: 'timun', name: 'Timun', emoji: '🥒', isFried: false },
+                { id: 'cendawan', name: 'Cendawan', emoji: '🍄', isFried: false }
+            ],
+            buah: [
+                { id: 'oren', name: 'Oren', emoji: '🍊', isFried: false },
+                { id: 'pisang', name: 'Pisang', emoji: '🍌', isFried: false },
+                { id: 'stroberi', name: 'Stroberi', emoji: '🍓', isFried: false },
+                { id: 'epal', name: 'Epal', emoji: '🍎', isFried: false },
+                { id: 'tembikai', name: 'Tembikai', emoji: '🍉', isFried: false },
+                { id: 'anggur', name: 'Anggur', emoji: '🍇', isFried: false },
+                { id: 'kiwi', name: 'Kiwi', emoji: '🥝', isFried: false }
+            ]
+        };
+
+        // GAME & BACKEND STATE
+        let gameState = {
+            currentScreen: 1,
+            meal: 'Sarapan',
+            playerName: '',
+            selections: {
+                protein: null,
+                karbohidrat: null,
+                sayur: null,
+                buah: null
+            }
+        };
+
+        let supabaseClient = null;
+        let allRecordsMemory = [];
+
+        // INITIALIZE APPLICATION
+        window.addEventListener('DOMContentLoaded', () => {
+            initBackendClient();
+            loadRecords();
+        });
+
+        // ==================== BACKEND & STORAGE LOGIC ====================
+        
+
+// ==================== SUPABASE CONFIGURATION ====================
+const SUPABASE_URL = 'https://hmfpmivlwwhsfgtsfkrf.supabase.co';
+
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_kdaXtRp3A48hPTbKJv4_JQ_XDZVJDfP';
+
+function initBackendClient() {
+    if (!window.supabase) {
+        console.error('Supabase library failed to load.');
+        return;
+    }
+
+    try {
+        supabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY
+        );
+
+        console.log('Supabase initialized successfully.');
+    } catch (e) {
+        console.error('Supabase initialization failed:', e);
+    }
+}
+
+
+
+        async function saveRecordToDatabase(record) {
+            // 1. Save to Local Memory & LocalStorage Backup
+            let localData = JSON.parse(localStorage.getItem('student_records') || '[]');
+            localData.unshift(record);
+            localStorage.setItem('student_records', JSON.stringify(localData));
+            allRecordsMemory = localData;
+
+            // 2. If Supabase configured, push to Cloud Database permanently
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('student_records').insert([{
+                        player_name: record.playerName,
+                        meal: record.meal,
+                        score: record.score,
+                        score_label: record.scoreLabel,
+                        selections: record.selections,
+                        created_at: record.timestamp
+                    }]);
+                } catch(err) {
+                    console.warn('Failed cloud push to Supabase, saved locally', err);
+                }
+            }
+        }
+
+        async function loadRecords() {
+            // Fetch local records first
+            let localData = JSON.parse(localStorage.getItem('student_records') || '[]');
+            allRecordsMemory = localData;
+
+            // Fetch cloud records if Supabase active
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('student_records')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (!error && data && data.length > 0) {
+                        allRecordsMemory = data.map(d => ({
+                            id: d.id,
+                            timestamp: d.created_at,
+                            dateFormatted: new Date(d.created_at).toLocaleString('ms-MY'),
+                            playerName: d.player_name,
+                            meal: d.meal,
+                            score: d.score,
+                            scoreLabel: d.score_label,
+                            selections: d.selections
+                        }));
+                    }
+                } catch(err) {
+                    console.warn('Using local database records', err);
+                }
+            }
+        }
+
+        // ==================== SCREEN NAVIGATION ====================
+        function goToScreen(screenNumber) {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById(`screen-${i}`);
+                if (el) el.classList.add('hidden');
+            }
+            
+            const target = document.getElementById(`screen-${screenNumber}`);
+            if (target) target.classList.remove('hidden');
+
+            gameState.currentScreen = screenNumber;
+            document.getElementById('page-step-text').textContent = screenNumber <= 5 ? `Halaman ${screenNumber} / 5` : `Portal Guru`;
+
+            if (screenNumber === 4) {
+                renderSelectionGrids();
+            } else if (screenNumber === 6) {
+                renderDashboardTable();
+            }
+        }
+
+        function selectMeal(mealName) {
+            gameState.meal = mealName;
+            goToScreen(3);
+        }
+
+        function submitName(e) {
+            e.preventDefault();
+            const input = document.getElementById('player-name-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            gameState.playerName = val;
+            document.getElementById('game-user-meal-tag').textContent = `${gameState.playerName} • ${gameState.meal}`;
+            goToScreen(4);
+        }
+
+        // ==================== GAME LOGIC ====================
+        function renderSelectionGrids() {
+            const categories = ['protein', 'karbohidrat', 'sayur', 'buah'];
+
+            categories.forEach(cat => {
+                const grid = document.getElementById(`grid-${cat}`);
+                grid.innerHTML = '';
+
+                FOOD_DATABASE[cat].forEach(item => {
+                    const isSelected = gameState.selections[cat] && gameState.selections[cat].id === item.id;
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.onclick = () => chooseFood(cat, item);
+
+                    btn.className = `p-1.5 rounded-xl border text-left flex items-center gap-1 transition-all ${
+                        isSelected 
+                            ? 'bg-emerald-600 text-white border-emerald-700 shadow font-extrabold scale-[1.02]' 
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 font-bold'
+                    }`;
+
+                    btn.innerHTML = `
+                        <span class="text-base leading-none">${item.emoji}</span>
+                        <span class="text-[10px] truncate">${item.name}</span>
+                    `;
+                    grid.appendChild(btn);
+                });
+            });
+
+            updateLivePlate();
+        }
+
+        function chooseFood(category, item) {
+            gameState.selections[category] = item;
+            renderSelectionGrids();
+        }
+
+        function resetSelections() {
+            gameState.selections = { protein: null, karbohidrat: null, sayur: null, buah: null };
+            renderSelectionGrids();
+        }
+
+        function updateLivePlate() {
+            const categories = ['protein', 'karbohidrat', 'sayur', 'buah'];
+            let filledCount = 0;
+
+            categories.forEach(cat => {
+                const sel = gameState.selections[cat];
+                const emojiEl = document.getElementById(`live-${cat}-emoji`);
+                const nameEl = document.getElementById(`live-${cat}-name`);
+
+                if (!emojiEl || !nameEl) return;
+
+                if (sel) {
+                    filledCount++;
+                    emojiEl.textContent = sel.emoji;
+                    nameEl.textContent = sel.name;
+                    nameEl.className = "bg-emerald-100 text-emerald-900 border border-emerald-300 font-extrabold shadow-sm px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] max-w-full truncate";
+                } else {
+                    emojiEl.textContent = '❓';
+                    nameEl.textContent = `Pilih ${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
+                    nameEl.className = "bg-white/90 backdrop-blur shadow-sm px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold text-slate-400 border border-slate-200 max-w-full truncate";
+                }
+            });
+
+            const statusText = document.getElementById('selection-status-text');
+            const evalBtn = document.getElementById('btn-evaluate');
+
+            if (filledCount === 4) {
+                statusText.textContent = '✨ Pinggan anda telah lengkap!';
+                statusText.className = 'text-emerald-700 font-extrabold';
+                evalBtn.disabled = false;
+            } else {
+                statusText.textContent = `Pilihan: ${filledCount}/4 kategori dilengkapkan`;
+                statusText.className = 'text-slate-500 font-bold';
+                evalBtn.disabled = true;
+            }
+        }
+
+        async function evaluateMeal() {
+            const sel = gameState.selections;
+
+            document.getElementById('res-user-header').textContent = `Pinggan: ${gameState.playerName} (${gameState.meal})`;
+
+            ['protein', 'karbohidrat', 'sayur', 'buah'].forEach(cat => {
+                const emojiEl = document.getElementById(`final-${cat}-emoji`);
+                const nameEl = document.getElementById(`final-${cat}-name`);
+                if (emojiEl && sel[cat]) emojiEl.textContent = sel[cat].emoji;
+                if (nameEl && sel[cat]) nameEl.textContent = sel[cat].name;
+            });
+
+            const selectedArray = [sel.protein, sel.karbohidrat, sel.sayur, sel.buah];
+            const friedItems = selectedArray.filter(item => item && item.isFried);
+            const commentsContainer = document.getElementById('nutrition-comments');
+
+            // Build specific feedback from the foods actually selected.
+            const foodAdvice = {
+                protein: {
+                    ayam: 'Ayam membantu badan membesar dan menjadi kuat.',
+                    ikan: 'Ikan membantu badan membesar dan kekal sihat.',
+                    daging: 'Daging membantu badan membesar. Pilih daging yang kurang berlemak.',
+                    telur: 'Telur membantu badan membesar dan menjadi kuat.',
+                    susu: 'Susu membantu menguatkan tulang dan gigi.',
+                    ayam_goreng: 'Ayam goreng membantu badan membesar. Ayam kukus atau panggang juga pilihan yang baik.'
+                },
+                karbohidrat: {
+                    nasi: 'Nasi memberi tenaga untuk belajar dan bermain.',
+                    mi: 'Mi memberi tenaga. Makan bersama sayur dan lauk.',
+                    roti: 'Roti memberi tenaga untuk aktiviti harian.',
+                    ubi_kentang: 'Kentang memberi tenaga. Kentang rebus atau bakar juga pilihan yang baik.',
+                    jagung: 'Jagung memberi tenaga dan membantu penghadaman.',
+                    nasi_goreng: 'Nasi goreng memberi tenaga. Cuba tambah sayur dan kurangkan minyak.',
+                    mi_goreng: 'Mi goreng memberi tenaga. Cuba tambah sayur dan pilih yang kurang berminyak.'
+                },
+                sayur: {
+                    lobak: 'Lobak membantu menjaga mata.',
+                    tomato: 'Tomato baik untuk kulit.',
+                    brokoli: 'Brokoli membantu badan kekal sihat.',
+                    kubis: 'Kubis baik untuk badan.',
+                    timun: 'Timun mengandungi banyak air. Cuba makan sayur yang pelbagai warna.',
+                    cendawan: 'Cendawan membantu melengkapkan hidangan yang sihat.'
+                },
+                buah: {
+                    oren: 'Oren baik untuk kulit.',
+                    pisang: 'Pisang memberi tenaga dan membuat kita ceria.',
+                    stroberi: 'Stroberi baik untuk kulit.',
+                    epal: 'Epal baik untuk kulit.',
+                    tembikai: 'Tembikai membantu badan kekal segar.',
+                    anggur: 'Anggur baik untuk kulit.',
+                    kiwi: 'Kiwi baik untuk kulit.'
+                }
+            };
+
+            const categoryInfo = [
+                { key: 'sayur', title: '🥦 SAYUR', color: 'emerald', ratio: 'Suku pinggan' },
+                { key: 'buah', title: '🍎 BUAH', color: 'rose', ratio: 'Suku pinggan' },
+                { key: 'karbohidrat', title: '🍚 KARBOHIDRAT', color: 'yellow', ratio: 'Suku pinggan' },
+                { key: 'protein', title: '🍗 PROTEIN', color: 'amber', ratio: 'Suku pinggan' }
+            ];
+
+            let finalScore = 100;
+            let finalScoreLabel = 'Seimbang';
+
+            if (friedItems.length >= 2) {
+                finalScore = 80;
+                finalScoreLabel = 'Kurangkan Makanan Bergoreng';
+            }
+
+            document.getElementById('res-score-percent').textContent = `${finalScore}%`;
+            document.getElementById('res-score-label').textContent = finalScoreLabel;
+            document.getElementById('score-badge-container').className = finalScore === 100
+                ? 'bg-emerald-600 text-white font-black px-3 py-1 rounded-2xl text-center shadow-md'
+                : 'bg-amber-600 text-white font-black px-3 py-1 rounded-2xl text-center shadow-md';
+
+            const cardClasses = {
+                emerald: 'bg-emerald-50/90 border-emerald-200 text-emerald-950',
+                rose: 'bg-rose-50/90 border-rose-200 text-rose-950',
+                yellow: 'bg-yellow-50/90 border-yellow-200 text-yellow-950',
+                amber: 'bg-amber-50/90 border-amber-200 text-amber-950',
+                blue: 'bg-blue-50/90 border-blue-200 text-blue-950'
+            };
+
+            let commentsHTML = '';
+            categoryInfo.forEach(info => {
+                const item = sel[info.key];
+                if (!item) return;
+                const advice = (foodAdvice[info.key] && foodAdvice[info.key][item.id])
+                    || `${item.name} ialah salah satu pilihan makanan. Jom makan pelbagai makanan!`;
+                commentsHTML += `
+                    <div class="${cardClasses[info.color]} p-2.5 rounded-2xl border">
+                        <h4 class="font-black text-[11px] mb-1">${info.title}: ${item.emoji} ${item.name}</h4>
+                        <p class="font-bold text-[11px] leading-relaxed">${advice}</p>
+                    </div>`;
+            });
+
+            if (friedItems.length > 0) {
+                const friedNames = friedItems.map(item => item.name).join(' dan ');
+                const friedAdvice = friedItems.length >= 2
+                    ? `Anda memilih ${friedNames}. Cuba pilih makanan yang kurang berminyak juga, seperti makanan rebus, kukus atau panggang.`
+                    : `Anda memilih ${friedNames}. Makanan ini boleh dimakan sekali-sekala. Cuba makanan yang kurang berminyak juga.`;
+                commentsHTML += `
+                    <div class="${friedItems.length >= 2 ? cardClasses.amber : cardClasses.blue} p-2.5 rounded-2xl border">
+                        <h4 class="font-black text-[11px] mb-1">🍳 PERHATIAN TENTANG KAEDAH MEMASAK</h4>
+                        <p class="font-bold text-[11px] leading-relaxed">${friedAdvice}</p>
+                    </div>`;
+            }
+
+            const selectedFoodNames = [
+                sel.karbohidrat, sel.protein, sel.sayur, sel.buah
+            ].filter(Boolean).map(item => item.name);
+            const selectedCategoryNames = [
+                sel.karbohidrat ? 'karbohidrat' : null,
+                sel.protein ? 'lauk' : null,
+                sel.sayur ? 'sayur' : null,
+                sel.buah ? 'buah' : null
+            ].filter(Boolean);
+            const summaryText = selectedFoodNames.length
+                ? `Bagus! Anda memilih ${selectedFoodNames.join(', ')}. Teruskan makan pelbagai makanan!`
+                : 'Pilih makanan untuk melihat rumusan pinggan anda.';
+
+            commentsHTML += `
+                <div class="bg-slate-50 p-2.5 rounded-2xl border border-slate-200 text-slate-800">
+                    <h4 class="font-black text-[11px] mb-1">🥗 RUMUSAN PINGGAN</h4>
+                    <p class="font-bold text-[11px] leading-relaxed">${summaryText}</p>
+                </div>`;
+            commentsContainer.innerHTML = commentsHTML;
+
+            // ==================== AUTO SAVE RECORD TO BACKEND ====================
+            const recordObj = {
+                id: 'rec_' + Date.now(),
+                timestamp: new Date().toISOString(),
+                dateFormatted: new Date().toLocaleString('ms-MY', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                playerName: gameState.playerName,
+                meal: gameState.meal,
+                score: finalScore,
+                scoreLabel: finalScoreLabel,
+                selections: {
+                    protein: sel.protein ? sel.protein.name : '',
+                    karbohidrat: sel.karbohidrat ? sel.karbohidrat.name : '',
+                    sayur: sel.sayur ? sel.sayur.name : '',
+                    buah: sel.buah ? sel.buah.name : ''
+                }
+            };
+
+            await saveRecordToDatabase(recordObj);
+            // Celebrate immediately after the user taps "Nilai & Simpan Keputusan".
+            if (window.pingganKuSound) window.pingganKuSound.playCelebrate();
+            goToScreen(5);
+        }
+
+        function restartGame() {
+            gameState.selections = { protein: null, karbohidrat: null, sayur: null, buah: null };
+            goToScreen(1);
+        }
+
+        // ==================== TEACHER PORTAL & DASHBOARD ====================
+        function openTeacherPortal() {
+            document.getElementById('pin-modal').classList.remove('hidden');
+        }
+
+        function closePinModal() {
+            document.getElementById('pin-modal').classList.add('hidden');
+        }
+
+        function verifyTeacherPin() {
+            const input = document.getElementById('teacher-pin-input').value;
+            if (input === '1234' || input === 'admin') {
+                closePinModal();
+                goToScreen(6);
+            } else {
+                alert('PIN Laluan salah! Sila cuba lagi. (Default PIN: 1234)');
+            }
+        }
+
+        async function renderDashboardTable() {
+            await loadRecords();
+            const tbody = document.getElementById('db-records-tbody');
+            tbody.innerHTML = '';
+
+            const search = document.getElementById('db-search-input').value.toLowerCase();
+            const filterMeal = document.getElementById('db-filter-meal').value;
+            const filterScore = document.getElementById('db-filter-score').value;
+
+            const filtered = allRecordsMemory.filter(r => {
+                const matchName = r.playerName.toLowerCase().includes(search);
+                const matchMeal = filterMeal === 'ALL' || r.meal === filterMeal;
+                const matchScore = filterScore === 'ALL' || String(r.score) === filterScore;
+                return matchName && matchMeal && matchScore;
+            });
+
+            document.getElementById('db-stats-text').textContent = `Jumlah Rekod: ${filtered.length} daripada ${allRecordsMemory.length} murid`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400 font-bold">Tiada rekod murid dijumpai.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((r, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+
+                const scoreBadgeClass = r.score === 100 
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200' 
+                    : 'bg-amber-100 text-amber-800 border-amber-200';
+
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-400">${index + 1}</td>
+                    <td class="p-3 font-semibold text-slate-500 whitespace-nowrap">${r.dateFormatted || new Date(r.timestamp).toLocaleDateString()}</td>
+                    <td class="p-3 font-black text-slate-800">${r.playerName}</td>
+                    <td class="p-3 font-bold text-slate-600">${r.meal}</td>
+                    <td class="p-3">
+                        <span class="px-2.5 py-0.5 rounded-full border font-black text-[10px] ${scoreBadgeClass}">
+                            ${r.score}% (${r.scoreLabel})
+                        </span>
+                    </td>
+                    <td class="p-3 text-[11px] font-medium text-slate-600">
+                        🍗 ${r.selections.protein} | 🍚 ${r.selections.karbohidrat} | 🥦 ${r.selections.sayur} | 🍎 ${r.selections.buah}
+                    </td>
+                    <td class="p-3 text-center">
+                        <button
+                            onclick="downloadStudentPlatePNG('${r.id}')"
+                            class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-[11px] px-3 py-2 rounded-lg whitespace-nowrap">
+                            📥 Muat Turun PNG
+                        </button>
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteRecord('${r.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-[11px] underline">
+                            Hapus
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function downloadStudentPlatePNG(recordId) {
+            const student = allRecordsMemory.find(
+                r => String(r.id) === String(recordId)
+        );
+
+        if (!student) {
+            alert('Rekod murid tidak dijumpai.');
+            return;
+        }
+
+        // Pastikan pilihan makanan tersedia
+        if (!student.selections) {
+            alert('Maklumat pilihan makanan murid tidak dijumpai.');
+            return;
+        }
+
+        // Gunakan reka bentuk PNG asal halaman keputusan
+        downloadPNG(student);
+}
+
+        async function deleteRecord(id) {
+            if (!confirm('Adakah anda pasti untuk menghapuskan rekod murid ini?')) return;
+
+            const record = allRecordsMemory.find(r => String(r.id) === String(id));
+            if (!record) {
+                alert('Rekod tidak dijumpai. Sila muat semula Portal Guru dan cuba lagi.');
+                return;
+            }
+
+            // Padam rekod cloud dahulu supaya ia tidak muncul semula selepas loadRecords().
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('student_records')
+                        .delete()
+                        .eq('id', id);
+
+                    if (error) {
+                        console.error('Gagal memadam rekod daripada Supabase:', error);
+                        alert('Rekod tidak dapat dipadam daripada pangkalan data. Sila semak tetapan atau kebenaran database.');
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Ralat semasa memadam rekod:', err);
+                    alert('Rekod tidak dapat dipadam. Semak sambungan internet dan tetapan database.');
+                    return;
+                }
+            }
+
+            // Padam salinan setempat yang sepadan (id tempatan mungkin berbeza daripada ID cloud).
+            const localData = JSON.parse(localStorage.getItem('student_records') || '[]');
+            const remainingLocal = localData.filter(localRecord => {
+                if (String(localRecord.id) === String(id)) return false;
+                const sameRecord = record.playerName && localRecord.playerName === record.playerName &&
+                    record.timestamp && localRecord.timestamp === record.timestamp;
+                return !sameRecord;
+            });
+            localStorage.setItem('student_records', JSON.stringify(remainingLocal));
+
+            allRecordsMemory = allRecordsMemory.filter(r => String(r.id) !== String(id));
+            await renderDashboardTable();
+            alert('Rekod murid berjaya dipadam.');
+        }
+
+        function exportToCSV() {
+            if (allRecordsMemory.length === 0) {
+                alert('Tiada rekod untuk dieksport.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID,Tarikh,Nama Murid,Waktu Makan,Markah,Status,Protein,Karbohidrat,Sayur,Buah\n";
+
+            allRecordsMemory.forEach(r => {
+                const row = [
+                    `"${r.id}"`,
+                    `"${r.dateFormatted || r.timestamp}"`,
+                    `"${r.playerName}"`,
+                    `"${r.meal}"`,
+                    `"${r.score}%"`,
+                    `"${r.scoreLabel}"`,
+                    `"${r.selections.protein}"`,
+                    `"${r.selections.karbohidrat}"`,
+                    `"${r.selections.sayur}"`,
+                    `"${r.selections.buah}"`
+                ].join(",");
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `rekod_pinggan_sihat_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ==================== SUPABASE CONFIG MODAL ====================
+        function openSupabaseConfigModal() {
+            document.getElementById('cfg-supa-url').value = localStorage.getItem('supabase_url') || '';
+            document.getElementById('cfg-supa-key').value = localStorage.getItem('supabase_key') || '';
+            document.getElementById('supabase-modal').classList.remove('hidden');
+        }
+
+        function closeSupabaseModal() {
+            document.getElementById('supabase-modal').classList.add('hidden');
+        }
+
+        function saveSupabaseConfig() {
+            const url = document.getElementById('cfg-supa-url').value.trim();
+            const key = document.getElementById('cfg-supa-key').value.trim();
+
+            if (url && key) {
+                localStorage.setItem('supabase_url', url);
+                localStorage.setItem('supabase_key', key);
+                initBackendClient();
+                alert('Tetapan Supabase berjaya disimpan!');
+            } else {
+                localStorage.removeItem('supabase_url');
+                localStorage.removeItem('supabase_key');
+                supabaseClient = null;
+                alert('Menggunakan simpanan tempatan peranti (LocalStorage).');
+            }
+            closeSupabaseModal();
+            renderDashboardTable();
+        }
+
+        // ==================== PNG CANVAS EXPORT LOGIC ====================
+        function drawRoundRect(ctx, x, y, w, h, r, fill, stroke, strokeWidth) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            if (fill) {
+                ctx.fillStyle = fill;
+                ctx.fill();
+            }
+            if (stroke) {
+                ctx.strokeStyle = stroke;
+                ctx.lineWidth = strokeWidth || 1;
+                ctx.stroke();
+            }
+        }
+
+        function downloadPNG(studentRecord = null) {
+            const canvas = document.getElementById('export-canvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+            bgGrad.addColorStop(0, '#f0fdf4');
+            bgGrad.addColorStop(0.5, '#f0fdfa');
+            bgGrad.addColorStop(1, '#e0f2fe');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            const sel = studentRecord
+                ? studentRecord.selections
+                : gameState.selections;
+            const selectedArray = [sel.protein, sel.karbohidrat, sel.sayur, sel.buah];
+            const friedItems = selectedArray.filter(i => i && i.isFried);
+            const isFriedHigh = friedItems.length >= 2;
+
+            const leftX = 40, leftY = 40, leftW = 680, leftH = 820;
+            drawRoundRect(ctx, leftX, leftY, leftW, leftH, 32, '#ffffff', '#e2e8f0', 2);
+
+            const headerPillX = leftX + 30, headerPillY = leftY + 30, headerPillW = leftW - 60, headerPillH = 75;
+            drawRoundRect(ctx, headerPillX, headerPillY, headerPillW, headerPillH, 20, '#d1fae5', '#a7f3d0', 1.5);
+
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#047857';
+            ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('HASIL HIDANGAN', leftX + leftW / 2, headerPillY + 28);
+
+            ctx.fillStyle = '#065f46';
+            ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+            const exportName = studentRecord ? studentRecord.playerName : gameState.playerName;
+            const exportMeal = studentRecord ? studentRecord.meal : gameState.meal;
+
+            ctx.fillText(`Pinggan: ${exportName} (${exportMeal})`, leftX + leftW / 2, headerPillY + 58);
+
+            const cx = leftX + leftW / 2, cy = leftY + 475, radius = 210;
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius + 14, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e293b';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 5;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - radius);
+            ctx.lineTo(cx, cy + radius);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(cx - radius, cy);
+            ctx.lineTo(cx, cy);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.setLineDash([8, 8]);
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + radius, cy);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            
+function drawQuadrantItem(title, categoryKey, titleColor, qx, qy) {
+        const item = sel && sel[categoryKey];
+        if (!item) return;
+
+        // 支援物件格式及文字格式的食物資料
+        const foodName = typeof item === 'string'
+            ? item
+            : (item.name || item.label || item.value || '未選擇');
+
+        const foodEmoji = typeof item === 'object' && item.emoji
+            ? item.emoji
+            : ({
+                'Telur': '🥚',
+                'Ayam': '🍗',
+                'Ikan': '🐟',
+            'Daging': '🥩',
+            'Kubis': '🥬',
+            'Bayam': '🥬',
+            'Brokoli': '🥦',
+            'Lobak': '🥕',
+            'Roti': '🍞',
+            'Nasi': '🍚',
+            'Mi': '🍜',
+            'Kentang': '🥔',
+            'Pisang': '🍌',
+            'Epal': '🍎',
+            'Oren': '🍊',
+            'Tembikai': '🍉'
+         }[foodName] || '🍽️');
+
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = titleColor;
+        ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText(title, qx, qy - 42);
+
+        ctx.font = '44px "Segoe UI Emoji", "Apple Color Emoji", sans-serif';
+        ctx.fillText(foodEmoji, qx, qy + 12);
+
+        ctx.font = '800 14px "Plus Jakarta Sans", sans-serif';
+        const textWidth = ctx.measureText(foodName).width;
+        const pillW = textWidth + 28;
+        const pillH = 32;
+
+        drawRoundRect(
+        ctx,
+        qx - pillW / 2,
+        qy + 30,
+        pillW,
+        pillH,
+        16,
+        '#ffffff',
+        '#cbd5e1',
+        1.5
+        );
+
+        ctx.fillStyle = '#1e293b';
+        ctx.fillText(foodName, qx, qy + 51);
+}
+
+            const qOffset = radius * 0.45;
+            drawQuadrantItem('PROTEIN', 'protein', '#78350f', cx - qOffset, cy - qOffset);
+            drawQuadrantItem('KARBOHIDRAT', 'karbohidrat', '#713f12', cx - qOffset, cy + qOffset - 10);
+            drawQuadrantItem('SAYUR', 'sayur', '#065f46', cx + qOffset, cy - qOffset);
+            drawQuadrantItem('BUAH', 'buah', '#881337', cx + qOffset, cy + qOffset - 10);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '700 14px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Pinggan Hidangan Sihat Suku Suku Separuh', cx, leftY + leftH - 30);
+
+            const rightX = 760, rightY = 40, rightW = 800, rightH = 820;
+            drawRoundRect(ctx, rightX, rightY, rightW, rightH, 32, '#ffffff', '#e2e8f0', 2);
+
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('PENILAIAN NUTRISI', rightX + 30, rightY + 50);
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = '800 24px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Cadangan & Ulasan Pemakanan', rightX + 30, rightY + 82);
+
+            const badgeW = 200, badgeH = 60, badgeX = rightX + rightW - badgeW - 30, badgeY = rightY + 32;
+            const badgeBg = isFriedHigh ? '#d97706' : '#059669';
+
+            drawRoundRect(ctx, badgeX, badgeY, badgeW, badgeH, 18, badgeBg, null, 0);
+
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(isFriedHigh ? '80%' : '100%', badgeX + badgeW / 2, badgeY + 30);
+
+            ctx.font = '800 10px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(isFriedHigh ? 'PERLU KURANGKAN GORENG' : 'SEIMBANG', badgeX + badgeW / 2, badgeY + 48);
+
+
+            const boxX = rightX + 30, boxW = rightW - 60;
+            const adviceMap = {
+                protein: {
+                    Ayam: 'Ayam membantu badan membesar dan menjadi kuat.',
+                    Ikan: 'Ikan membantu badan membesar dan kekal sihat.',
+                    Daging: 'Daging membantu badan membesar.',
+                    Telur: 'Telur membantu badan membesar dan menjadi kuat.',
+                    Susu: 'Susu membantu menguatkan tulang dan gigi.',
+                    'Ayam Goreng': 'Ayam goreng membantu badan membesar. Ayam kukus atau panggang juga pilihan yang baik.'
+                },
+                karbohidrat: {
+                    Nasi: 'Nasi memberi tenaga untuk belajar dan bermain.',
+                    Mi: 'Mi memberi tenaga. Makan bersama sayur dan lauk.',
+                    Roti: 'Roti memberi tenaga untuk aktiviti harian.',
+                    Kentang: 'Kentang memberi tenaga.',
+                    Jagung: 'Jagung memberi tenaga.',
+                    'Nasi Goreng': 'Nasi goreng memberi tenaga. Cuba tambah sayur dan kurangkan minyak.',
+                    'Mi Goreng': 'Mi goreng memberi tenaga. Cuba tambah sayur.'
+                },
+                sayur: {
+                    Lobak: 'Lobak membantu menjaga mata.',
+                    Tomato: 'Tomato baik untuk kulit.',
+                    Brokoli: 'Brokoli membantu badan kekal sihat.',
+                    Kubis: 'Kubis baik untuk badan.',
+                    Timun: 'Timun mengandungi banyak air.',
+                    Cendawan: 'Cendawan membantu melengkapkan hidangan yang sihat.'
+                },
+                buah: {
+                    Epal: 'Epal baik untuk kulit.',
+                    Kiwi: 'Kiwi baik untuk kulit.',
+                    Oren: 'Oren baik untuk kulit.',
+                    Pisang: 'Pisang memberi tenaga dan membuat kita ceria.',
+                    Stroberi: 'Stroberi baik untuk kulit.',
+                    Tembikai: 'Tembikai membantu badan kekal segar.',
+                    Anggur: 'Anggur baik untuk kulit.'
+                }
+            };
+            const simpleAdvice = (key, item) => {
+                if (!item) return '';
+                const name = typeof item === 'string' ? item : (item.name || item.label || item.value || '');
+                return (adviceMap[key] && adviceMap[key][name]) || `${name} baik untuk badan.`;
+            };
+            const chosen = [
+                { key: 'sayur', title: '🥦 SAYUR', color: '#ecfdf5', border: '#a7f3d0', text: '#065f46' },
+                { key: 'buah', title: '🍎 BUAH', color: '#fff1f2', border: '#fecdd3', text: '#881337' },
+                { key: 'karbohidrat', title: '🍚 KARBOHIDRAT', color: '#fefce8', border: '#fde68a', text: '#713f12' },
+                { key: 'protein', title: '🍗 PROTEIN', color: '#fffbeb', border: '#fde68a', text: '#78350f' }
+            ];
+            const cardGap = 14, cardW = (boxW - cardGap) / 2, cardH = 102;
+            const cardsTop = rightY + 115;
+            ctx.textAlign = 'left';
+            chosen.forEach((info, index) => {
+                const item = sel && sel[info.key];
+                if (!item) return;
+                const x = boxX + (index % 2) * (cardW + cardGap);
+                const y = cardsTop + Math.floor(index / 2) * (cardH + 14);
+                drawRoundRect(ctx, x, y, cardW, cardH, 18, info.color, info.border, 1.5);
+                const name = typeof item === 'string' ? item : (item.name || item.label || item.value || '');
+                const emoji = typeof item === 'object' && item.emoji ? item.emoji : '🍽️';
+                ctx.fillStyle = info.text;
+                ctx.font = '800 15px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`${info.title}: ${emoji} ${name}`, x + 16, y + 30, cardW - 32);
+                ctx.font = '700 14px "Plus Jakarta Sans", sans-serif';
+                const advice = simpleAdvice(info.key, item);
+                const words = advice.split(' ');
+                let line = '', lineY = y + 57;
+                words.forEach(word => {
+                    const test = line ? `${line} ${word}` : word;
+                    if (ctx.measureText(test).width > cardW - 32 && line) {
+                        ctx.fillText(line, x + 16, lineY, cardW - 32);
+                        line = word; lineY += 20;
+                    } else line = test;
+                });
+                if (line && lineY < y + cardH - 8) ctx.fillText(line, x + 16, lineY, cardW - 32);
+            });
+
+            const summaryY = cardsTop + 2 * (cardH + 14);
+            drawRoundRect(ctx, boxX, summaryY, boxW, 82, 18, '#f8fafc', '#e2e8f0', 1.5);
+            ctx.fillStyle = '#334155';
+            ctx.font = '800 15px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('🥗 RUMUSAN PINGGAN', boxX + 16, summaryY + 27);
+            ctx.font = '700 14px "Plus Jakarta Sans", sans-serif';
+            const summaryFoodNames = [
+                sel && sel.karbohidrat, sel && sel.protein, sel && sel.sayur, sel && sel.buah
+            ].filter(Boolean).map(item => typeof item === 'string' ? item : (item.name || item.label || item.value || ''));
+            const summaryTextPNG = summaryFoodNames.length
+                ? `Bagus! Anda memilih ${summaryFoodNames.join(', ')}. Teruskan makan pelbagai makanan!`
+                : 'Pilih makanan untuk melihat rumusan pinggan anda.';
+            const summaryWords = summaryTextPNG.split(' ');
+            let summaryLine = '', summaryLineY = summaryY + 52;
+            summaryWords.forEach(word => {
+                const testLine = summaryLine ? `${summaryLine} ${word}` : word;
+                if (ctx.measureText(testLine).width > boxW - 32 && summaryLine) {
+                    ctx.fillText(summaryLine, boxX + 16, summaryLineY, boxW - 32);
+                    summaryLine = word;
+                    summaryLineY += 18;
+                } else summaryLine = testLine;
+            });
+            if (summaryLine && summaryLineY <= summaryY + 74) {
+                ctx.fillText(summaryLine, boxX + 16, summaryLineY, boxW - 32);
+            }
+
+            const link = document.createElement('a');
+            link.download = `pinggan-suku-suku-separuh-${String(exportName || 'murid').toLowerCase().replace(/\s+/g, '-')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+
+<!-- PingganKu Sound Add-on: button feedback + background music -->
+<style>
+  #pingganku-audio-toggle {
+    position: fixed; right: 16px; bottom: 16px; z-index: 9999;
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 14px; border-radius: 999px;
+    background: rgba(6, 95, 70, .96); color: #fff;
+    border: 2px solid rgba(167, 243, 208, .95);
+    box-shadow: 0 8px 24px rgba(6, 95, 70, .25);
+    font: 800 12px 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer; transition: transform .15s ease, background .15s ease;
+  }
+  #pingganku-audio-toggle:hover { transform: translateY(-2px); background: #047857; }
+  #pingganku-audio-toggle:active { transform: scale(.96); }
+  @media (max-width: 640px) {
+    #pingganku-audio-toggle { right: 10px; bottom: 10px; padding: 9px 11px; }
+  }
+</style>
+<button id="pingganku-audio-toggle" type="button" aria-label="Matikan muzik latar" title="Muzik latar dan kesan bunyi">
+  <span id="pingganku-audio-icon">🎵</span><span id="pingganku-audio-label">Bunyi ON</span>
+</button>
+<script>
+(function () {
+  if (window.__pingganKuSoundInstalled) return;
+  window.__pingganKuSoundInstalled = true;
+
+  class PingganKuSoundManager {
+    constructor() {
+      this.ctx = null;
+      this.master = null;
+      this.musicTimer = null;
+      this.noteIndex = 0;
+      this.enabled = true;
+      this.unlocked = false;
+      // Cheerful, gentle melody inspired by GIANT FOOD RUN's synthesized BGM.
+      this.melody = [
+        [523.25, 0.20], [659.25, 0.20], [783.99, 0.28], [659.25, 0.20],
+        [587.33, 0.20], [698.46, 0.20], [880.00, 0.28], [698.46, 0.20],
+        [523.25, 0.20], [659.25, 0.20], [783.99, 0.20], [1046.50, 0.30],
+        [880.00, 0.20], [783.99, 0.20], [659.25, 0.20], [587.33, 0.30]
+      ];
+    }
+    init() {
+      if (this.ctx) {
+        if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+        return;
+      }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = this.enabled ? 0.65 : 0;
+      this.master.connect(this.ctx.destination);
+    }
+    unlock() {
+      this.init();
+      if (!this.ctx || this.unlocked) return;
+      this.unlocked = true;
+      if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+      if (this.enabled) this.startBGM();
+    }
+    tone(freq, duration, type = 'sine', volume = 0.12, delay = 0) {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx || !this.master) return;
+      const t = this.ctx.currentTime + delay;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(t);
+      osc.stop(t + duration + 0.03);
+    }
+    playClick() {
+      this.tone(740, 0.065, 'sine', 0.075);
+      this.tone(990, 0.055, 'sine', 0.045, 0.035);
+    }
+    playSelect() {
+      this.tone(587.33, 0.09, 'triangle', 0.09);
+      this.tone(783.99, 0.13, 'triangle', 0.085, 0.07);
+    }
+    playSuccess() {
+      this.tone(523.25, 0.12, 'sine', 0.12);
+      this.tone(659.25, 0.12, 'sine', 0.12, 0.09);
+      this.tone(783.99, 0.18, 'sine', 0.13, 0.18);
+    }
+    // Bright, happy celebration jingle played after the meal decision is saved.
+    playCelebrate() {
+      if (!this.enabled) return;
+      const notes = [
+        [523.25, 0.12, 0],
+        [659.25, 0.12, 0.11],
+        [783.99, 0.12, 0.22],
+        [1046.50, 0.20, 0.34],
+        [783.99, 0.12, 0.54],
+        [1046.50, 0.28, 0.66]
+      ];
+      notes.forEach(([frequency, duration, delay]) => {
+        this.tone(frequency, duration, 'triangle', 0.15, delay);
+      });
+      // A light sparkle at the end makes the result feel celebratory.
+      this.tone(1318.51, 0.16, 'sine', 0.09, 0.88);
+      this.tone(1567.98, 0.22, 'sine', 0.075, 1.02);
+    }
+    startBGM() {
+      if (!this.enabled || !this.ctx || this.musicTimer) return;
+      const playNext = () => {
+        if (!this.enabled || !this.ctx) return;
+        const note = this.melody[this.noteIndex % this.melody.length];
+        this.noteIndex++;
+        this.tone(note[0], note[1], 'triangle', 0.035);
+        // Soft accompaniment gives the loop a light, playful game feel.
+        if (this.noteIndex % 4 === 1) {
+          const bass = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const t = this.ctx.currentTime;
+          bass.type = 'sine';
+          bass.frequency.setValueAtTime(note[0] / 2, t);
+          gain.gain.setValueAtTime(0.0001, t);
+          gain.gain.exponentialRampToValueAtTime(0.022, t + 0.025);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+          bass.connect(gain); gain.connect(this.master);
+          bass.start(t); bass.stop(t + 0.35);
+        }
+      };
+      playNext();
+      this.musicTimer = window.setInterval(playNext, 260);
+    }
+    stopBGM() {
+      if (this.musicTimer) window.clearInterval(this.musicTimer);
+      this.musicTimer = null;
+    }
+    toggle() {
+      this.enabled = !this.enabled;
+      this.init();
+      if (this.master) this.master.gain.setTargetAtTime(this.enabled ? 0.65 : 0, this.ctx.currentTime, 0.04);
+      if (this.enabled) {
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+        this.startBGM();
+      } else {
+        this.stopBGM();
+      }
+      return this.enabled;
+    }
+  }
+
+  const pingganSound = new PingganKuSoundManager();
+  window.pingganKuSound = pingganSound;
+
+  function updateAudioButton() {
+    const button = document.getElementById('pingganku-audio-toggle');
+    const icon = document.getElementById('pingganku-audio-icon');
+    const label = document.getElementById('pingganku-audio-label');
+    if (!button || !icon || !label) return;
+    icon.textContent = pingganSound.enabled ? '🎵' : '🔇';
+    label.textContent = pingganSound.enabled ? 'Bunyi ON' : 'Bunyi OFF';
+    button.setAttribute('aria-label', pingganSound.enabled ? 'Matikan muzik dan kesan bunyi' : 'Hidupkan muzik dan kesan bunyi');
+  }
+
+  // Unlock audio on the first user gesture; browsers block autoplay until then.
+  document.addEventListener('pointerdown', function firstGesture() {
+    pingganSound.unlock();
+    document.removeEventListener('pointerdown', firstGesture, true);
+  }, true);
+  document.addEventListener('keydown', function firstKeyGesture() {
+    pingganSound.unlock();
+    document.removeEventListener('keydown', firstKeyGesture, true);
+  }, true);
+
+  // Every button, including buttons rendered later by JavaScript, receives a click sound.
+  // Ignore the audio toggle itself so toggling OFF does not produce a final unwanted sound.
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('button, input[type="submit"], input[type="button"]');
+    if (!button || button.disabled || button.id === 'pingganku-audio-toggle') return;
+    pingganSound.unlock();
+    pingganSound.playClick();
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const audioButton = document.getElementById('pingganku-audio-toggle');
+    if (audioButton) {
+      audioButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        pingganSound.toggle();
+        updateAudioButton();
+        if (pingganSound.enabled) pingganSound.playSelect();
+      });
+    }
+    updateAudioButton();
+
+    // Give major flow actions a slightly brighter confirmation sound in addition to button feedback.
+    document.querySelectorAll('.meal-btn').forEach(button => {
+      button.addEventListener('click', () => pingganSound.playSelect());
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
