@@ -916,6 +916,8 @@ function initBackendClient() {
             };
 
             await saveRecordToDatabase(recordObj);
+            // Celebrate immediately after the user taps "Nilai & Simpan Keputusan".
+            if (window.pingganKuSound) window.pingganKuSound.playCelebrate();
             goToScreen(5);
         }
 
@@ -1348,5 +1350,210 @@ function drawQuadrantItem(title, categoryKey, titleColor, qx, qy) {
             link.click();
         }
     </script>
+
+<!-- PingganKu Sound Add-on: button feedback + background music -->
+<style>
+  #pingganku-audio-toggle {
+    position: fixed; right: 16px; bottom: 16px; z-index: 9999;
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 14px; border-radius: 999px;
+    background: rgba(6, 95, 70, .96); color: #fff;
+    border: 2px solid rgba(167, 243, 208, .95);
+    box-shadow: 0 8px 24px rgba(6, 95, 70, .25);
+    font: 800 12px 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer; transition: transform .15s ease, background .15s ease;
+  }
+  #pingganku-audio-toggle:hover { transform: translateY(-2px); background: #047857; }
+  #pingganku-audio-toggle:active { transform: scale(.96); }
+  @media (max-width: 640px) {
+    #pingganku-audio-toggle { right: 10px; bottom: 10px; padding: 9px 11px; }
+  }
+</style>
+<button id="pingganku-audio-toggle" type="button" aria-label="Matikan muzik latar" title="Muzik latar dan kesan bunyi">
+  <span id="pingganku-audio-icon">🎵</span><span id="pingganku-audio-label">Bunyi ON</span>
+</button>
+<script>
+(function () {
+  if (window.__pingganKuSoundInstalled) return;
+  window.__pingganKuSoundInstalled = true;
+
+  class PingganKuSoundManager {
+    constructor() {
+      this.ctx = null;
+      this.master = null;
+      this.musicTimer = null;
+      this.noteIndex = 0;
+      this.enabled = true;
+      this.unlocked = false;
+      // Cheerful, gentle melody inspired by GIANT FOOD RUN's synthesized BGM.
+      this.melody = [
+        [523.25, 0.20], [659.25, 0.20], [783.99, 0.28], [659.25, 0.20],
+        [587.33, 0.20], [698.46, 0.20], [880.00, 0.28], [698.46, 0.20],
+        [523.25, 0.20], [659.25, 0.20], [783.99, 0.20], [1046.50, 0.30],
+        [880.00, 0.20], [783.99, 0.20], [659.25, 0.20], [587.33, 0.30]
+      ];
+    }
+    init() {
+      if (this.ctx) {
+        if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+        return;
+      }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = this.enabled ? 0.65 : 0;
+      this.master.connect(this.ctx.destination);
+    }
+    unlock() {
+      this.init();
+      if (!this.ctx || this.unlocked) return;
+      this.unlocked = true;
+      if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+      if (this.enabled) this.startBGM();
+    }
+    tone(freq, duration, type = 'sine', volume = 0.12, delay = 0) {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx || !this.master) return;
+      const t = this.ctx.currentTime + delay;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, volume), t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(t);
+      osc.stop(t + duration + 0.03);
+    }
+    playClick() {
+      this.tone(740, 0.065, 'sine', 0.075);
+      this.tone(990, 0.055, 'sine', 0.045, 0.035);
+    }
+    playSelect() {
+      this.tone(587.33, 0.09, 'triangle', 0.09);
+      this.tone(783.99, 0.13, 'triangle', 0.085, 0.07);
+    }
+    playSuccess() {
+      this.tone(523.25, 0.12, 'sine', 0.12);
+      this.tone(659.25, 0.12, 'sine', 0.12, 0.09);
+      this.tone(783.99, 0.18, 'sine', 0.13, 0.18);
+    }
+    // Bright, happy celebration jingle played after the meal decision is saved.
+    playCelebrate() {
+      if (!this.enabled) return;
+      const notes = [
+        [523.25, 0.12, 0],
+        [659.25, 0.12, 0.11],
+        [783.99, 0.12, 0.22],
+        [1046.50, 0.20, 0.34],
+        [783.99, 0.12, 0.54],
+        [1046.50, 0.28, 0.66]
+      ];
+      notes.forEach(([frequency, duration, delay]) => {
+        this.tone(frequency, duration, 'triangle', 0.15, delay);
+      });
+      // A light sparkle at the end makes the result feel celebratory.
+      this.tone(1318.51, 0.16, 'sine', 0.09, 0.88);
+      this.tone(1567.98, 0.22, 'sine', 0.075, 1.02);
+    }
+    startBGM() {
+      if (!this.enabled || !this.ctx || this.musicTimer) return;
+      const playNext = () => {
+        if (!this.enabled || !this.ctx) return;
+        const note = this.melody[this.noteIndex % this.melody.length];
+        this.noteIndex++;
+        this.tone(note[0], note[1], 'triangle', 0.035);
+        // Soft accompaniment gives the loop a light, playful game feel.
+        if (this.noteIndex % 4 === 1) {
+          const bass = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const t = this.ctx.currentTime;
+          bass.type = 'sine';
+          bass.frequency.setValueAtTime(note[0] / 2, t);
+          gain.gain.setValueAtTime(0.0001, t);
+          gain.gain.exponentialRampToValueAtTime(0.022, t + 0.025);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
+          bass.connect(gain); gain.connect(this.master);
+          bass.start(t); bass.stop(t + 0.35);
+        }
+      };
+      playNext();
+      this.musicTimer = window.setInterval(playNext, 260);
+    }
+    stopBGM() {
+      if (this.musicTimer) window.clearInterval(this.musicTimer);
+      this.musicTimer = null;
+    }
+    toggle() {
+      this.enabled = !this.enabled;
+      this.init();
+      if (this.master) this.master.gain.setTargetAtTime(this.enabled ? 0.65 : 0, this.ctx.currentTime, 0.04);
+      if (this.enabled) {
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+        this.startBGM();
+      } else {
+        this.stopBGM();
+      }
+      return this.enabled;
+    }
+  }
+
+  const pingganSound = new PingganKuSoundManager();
+  window.pingganKuSound = pingganSound;
+
+  function updateAudioButton() {
+    const button = document.getElementById('pingganku-audio-toggle');
+    const icon = document.getElementById('pingganku-audio-icon');
+    const label = document.getElementById('pingganku-audio-label');
+    if (!button || !icon || !label) return;
+    icon.textContent = pingganSound.enabled ? '🎵' : '🔇';
+    label.textContent = pingganSound.enabled ? 'Bunyi ON' : 'Bunyi OFF';
+    button.setAttribute('aria-label', pingganSound.enabled ? 'Matikan muzik dan kesan bunyi' : 'Hidupkan muzik dan kesan bunyi');
+  }
+
+  // Unlock audio on the first user gesture; browsers block autoplay until then.
+  document.addEventListener('pointerdown', function firstGesture() {
+    pingganSound.unlock();
+    document.removeEventListener('pointerdown', firstGesture, true);
+  }, true);
+  document.addEventListener('keydown', function firstKeyGesture() {
+    pingganSound.unlock();
+    document.removeEventListener('keydown', firstKeyGesture, true);
+  }, true);
+
+  // Every button, including buttons rendered later by JavaScript, receives a click sound.
+  // Ignore the audio toggle itself so toggling OFF does not produce a final unwanted sound.
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('button, input[type="submit"], input[type="button"]');
+    if (!button || button.disabled || button.id === 'pingganku-audio-toggle') return;
+    pingganSound.unlock();
+    pingganSound.playClick();
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const audioButton = document.getElementById('pingganku-audio-toggle');
+    if (audioButton) {
+      audioButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        pingganSound.toggle();
+        updateAudioButton();
+        if (pingganSound.enabled) pingganSound.playSelect();
+      });
+    }
+    updateAudioButton();
+
+    // Give major flow actions a slightly brighter confirmation sound in addition to button feedback.
+    document.querySelectorAll('.meal-btn').forEach(button => {
+      button.addEventListener('click', () => pingganSound.playSelect());
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
